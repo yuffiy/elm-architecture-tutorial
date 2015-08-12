@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="UTF-8">
+    <title>The Elm Architecture by evancz</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="stylesheets/normalize.css" media="screen">
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/github-light.css" media="screen">
+  </head>
+  <body>
+    <section class="page-header">
+      <h1 class="project-name">The Elm Architecture</h1>
+      <h2 class="project-tagline">Tutorial for creating modular Elm code that scales with your app</h2>
+      <a href="https://github.com/evancz/elm-architecture-tutorial" class="btn">View on GitHub</a>
+      <a href="https://github.com/evancz/elm-architecture-tutorial/zipball/master" class="btn">Download .zip</a>
+      <a href="https://github.com/evancz/elm-architecture-tutorial/tarball/master" class="btn">Download .tar.gz</a>
+    </section>
+
+    <section class="main-content">
+      <h1>
+<a id="the-elm-architecture" class="anchor" href="#the-elm-architecture" aria-hidden="true"><span class="octicon octicon-link"></span></a>The Elm Architecture</h1>
+
+<p>This tutorial outlines “The Elm Architecture” which you will see in all <a href="http://elm-lang.org/">Elm</a> programs, from <a href="https://github.com/evancz/elm-todomvc">TodoMVC</a> and <a href="https://github.com/rtfeldman/dreamwriter#dreamwriter">dreamwriter</a> to the code running in production at <a href="https://www.noredink.com/">NoRedInk</a> and <a href="https://www.circuithub.com/">CircuitHub</a>. The basic pattern is useful whether you are writing your front-end in Elm or JS or whatever else.</p>
+
+<p>The Elm Architecture is a simple pattern for infinitely nestable components. It is great for modularity, code reuse, and testing. Ultimately, this pattern makes it easy to create complex web apps in a way that stays modular. We will run through 8 examples, slowly building on core principles and patterns:</p>
+
+<ol>
+<li><a href="https://evancz.github.io/elm-architecture-tutorial/examples/1">Counter</a></li>
+<li><a href="https://evancz.github.io/elm-architecture-tutorial/examples/2">Pair of counters</a></li>
+<li><a href="https://evancz.github.io/elm-architecture-tutorial/examples/3">List of counters</a></li>
+<li><a href="https://evancz.github.io/elm-architecture-tutorial/examples/4">List of counters (variation)</a></li>
+<li><a href="https://evancz.github.io/elm-architecture-tutorial/examples/5">GIF fetcher</a></li>
+<li><a href="https://evancz.github.io/elm-architecture-tutorial/examples/6">Pair of GIF fetchers</a></li>
+<li><a href="https://evancz.github.io/elm-architecture-tutorial/examples/7">List of GIF fetchers</a></li>
+<li><a href="https://evancz.github.io/elm-architecture-tutorial/examples/8">Pair of animating squares</a></li>
+</ol>
+
+<p>This tutorial will really help! It it will bring out the concepts and ideas necessary to get to make examples 7 and 8 super easy. Investing in the foundation will be worth it!</p>
+
+<p>One very interesting aspect of the architecture in all these programs is that it <em>emerges</em> from Elm naturally. The language design itself leads you towards this architecture whether you have read this document and know the benefits or not. I actually discovered this pattern just using Elm and have been shocked by its simplicity and power.</p>
+
+<p><strong>Note</strong>: To follow along with this tutorial with code, <a href="http://elm-lang.org/install">install Elm</a> and fork this repo. Each example in the tutorial gives instructions of how to run the code.</p>
+
+<h2>
+<a id="the-basic-pattern" class="anchor" href="#the-basic-pattern" aria-hidden="true"><span class="octicon octicon-link"></span></a>The Basic Pattern</h2>
+
+<p>The logic of every Elm program will break up into three cleanly separated parts:</p>
+
+<ul>
+<li>model</li>
+<li>update</li>
+<li>view</li>
+</ul>
+
+<p>You can pretty reliably start with the following skeleton and then iteratively fill in details for your particular case.</p>
+
+<div class="highlight highlight-elm"><pre><span class="pl-c">-- MODEL</span>
+
+<span class="pl-k">type alias </span><span class="pl-c1">Model</span> <span class="pl-k">=</span> { <span class="pl-k">...</span> }
+
+
+<span class="pl-c">-- UPDATE</span>
+
+<span class="pl-k">type </span><span class="pl-c1">Action</span> <span class="pl-k">=</span> <span class="pl-c1">Reset</span> <span class="pl-k">|</span> <span class="pl-k">...</span>
+
+<span class="pl-en">update</span> <span class="pl-k">:</span> <span class="pl-k">Action</span> <span class="pl-k">-&gt;</span> <span class="pl-k">Model</span> <span class="pl-k">-&gt;</span> <span class="pl-k">Model</span>
+<span class="pl-en">update </span>action model <span class="pl-k">=</span>
+  <span class="pl-k">case </span>action <span class="pl-k">of</span>
+    <span class="pl-c1">Reset</span> <span class="pl-k">-&gt;</span> <span class="pl-k">...</span>
+    <span class="pl-k">...</span>
+
+
+<span class="pl-c">-- VIEW</span>
+
+<span class="pl-en">view</span> <span class="pl-k">:</span> <span class="pl-k">Model</span> <span class="pl-k">-&gt;</span> <span class="pl-k">Html</span>
+<span class="pl-en">view </span><span class="pl-k">=</span>
+  <span class="pl-k">...</span></pre></div>
+
+<p>This tutorial is all about this pattern and small variations and extensions.</p>
+
+<h2>
+<a id="example-1-a-counter" class="anchor" href="#example-1-a-counter" aria-hidden="true"><span class="octicon octicon-link"></span></a>Example 1: A Counter</h2>
+
+<blockquote>
+<p><a href="https://evancz.github.io/elm-architecture-tutorial/examples/1">demo</a> / <a href="examples/1/">run locally</a></p>
+</blockquote>
+
+<p>Our first example is a simple counter that can be incremented or decremented.</p>
+
+<p><a href="examples/1/Counter.elm">The code</a> starts with a very simple model. We just need to keep track of a single number:</p>
+
+<div class="highlight highlight-elm"><pre><span class="pl-k">type alias </span><span class="pl-c1">Model</span> <span class="pl-k">=</span> <span class="pl-c1">Int</span></pre></div>
+
+<p>When it comes to updating our model, things are relatively simple again. We define a set of actions that can be performed, and an <code>update</code> function to actually perform those actions:</p>
+
+<div class="highlight highlight-elm"><pre><span class="pl-k">type </span><span class="pl-c1">Action</span> <span class="pl-k">=</span> <span class="pl-c1">Increment</span> <span class="pl-k">|</span> <span class="pl-c1">Decrement</span>
+
+<span class="pl-en">update</span> <span class="pl-k">:</span> <span class="pl-k">Action</span> <span class="pl-k">-&gt;</span> <span class="pl-k">Model</span> <span class="pl-k">-&gt;</span> <span class="pl-k">Model</span>
+<span class="pl-en">update </span>action model <span class="pl-k">=</span>
+  <span class="pl-k">case </span>action <span class="pl-k">of</span>
+    <span class="pl-c1">Increment</span> <span class="pl-k">-&gt;</span> model <span class="pl-k">+</span> <span class="pl-c1">1</span>
+    <span class="pl-c1">Decrement</span> <span class="pl-k">-&gt;</span> model <span class="pl-k">-</span> <span class="pl-c1">1</span></pre></div>
+
+<p>Notice that our <code>Action</code> <a href="http://elm-lang.org/learn/Union-Types.elm">union type</a> does not <em>do</em> anything. It simply describes the actions that are possible. If someone decides our counter should be doubled when a certain button is pressed, that will be a new case in <code>Action</code>. This means our code ends up very clear about how our model can be transformed. Anyone reading this code will immediately know what is allowed and what is not. Furthermore, they will know exactly how to add new features in a consistent way.</p>
+
+<p>Finally, we create a way to <code>view</code> our <code>Model</code>. We are using <a href="http://elm-lang.org/blog/Blazing-Fast-Html.elm">elm-html</a> to create some HTML to show in a browser. We will create a div that contains: a decrement button, a div showing the current count, and an increment button.</p>
+
+<div class="highlight highlight-elm"><pre><span class="pl-en">view</span> <span class="pl-k">:</span> <span class="pl-k">Signal</span>.<span class="pl-k">Address</span> <span class="pl-k">Action</span> <span class="pl-k">-&gt;</span> <span class="pl-k">Model</span> <span class="pl-k">-&gt;</span> <span class="pl-k">Html</span>
+<span class="pl-en">view </span>address model <span class="pl-k">=</span>
+  div <span class="pl-c1">[]</span>
+    [ button [ onClick address <span class="pl-c1">Decrement</span> ] [ text <span class="pl-s"><span class="pl-pds">"</span>-<span class="pl-pds">"</span></span> ]
+    , div [ countStyle ] [ text (toString model) ]
+    , button [ onClick address <span class="pl-c1">Increment</span> ] [ text <span class="pl-s"><span class="pl-pds">"</span>+<span class="pl-pds">"</span></span> ]
+    ]
+
+<span class="pl-en">countStyle</span> <span class="pl-k">:</span> <span class="pl-k">Attribute</span>
+<span class="pl-en">countStyle </span><span class="pl-k">=</span>
+  <span class="pl-k">...</span></pre></div>
+
+<p>The tricky thing about our <code>view</code> function is the <code>Address</code>. We will dive into that in the next section! For now, I just want you to notice that <strong>this code is entirely declarative</strong>. We take in a <code>Model</code> and produce some <code>Html</code>. That is it. At no point do we mutate the DOM manually, which gives the library <a href="http://elm-lang.org/blog/Blazing-Fast-Html.elm">much more freedom to make clever optimizations</a> and actually makes rendering <em>faster</em> overall. It is crazy. Furthermore, <code>view</code> is a plain old function so we can get the full power of Elm’s module system, test frameworks, and libraries when creating views.</p>
+
+<p>This pattern is the essense of architecting Elm programs. Every example we see from now on will be a slight variation on this basic pattern: <code>Model</code>, <code>update</code>, <code>view</code>.</p>
+
+<h2>
+<a id="starting-the-program" class="anchor" href="#starting-the-program" aria-hidden="true"><span class="octicon octicon-link"></span></a>Starting the Program</h2>
+
+<p>Pretty much all Elm programs will have a small bit of code that drives the whole application. For each example in this tutorial, that code is broken out into <code>Main.elm</code>. For our counter example, the interesting code looks like this:</p>
+
+<div class="highlight highlight-elm"><pre><span class="pl-k">import</span> <span class="pl-c1">Counter</span> exposing (<span class="pl-en">update</span>, <span class="pl-en">view</span>)
+<span class="pl-k">import</span> <span class="pl-c1">StartApp.Simple</span> exposing (<span class="pl-en">start</span>)
+
+<span class="pl-en">main </span><span class="pl-k">=</span>
+  start { model <span class="pl-k">=</span> <span class="pl-c1">0</span>, update <span class="pl-k">=</span> update, view <span class="pl-k">=</span> view }</pre></div>
+
+<p>We are use the <a href="https://github.com/evancz/start-app"><code>StartApp</code></a> package to wire together our initial model with the update and view functions. It is a small wrapper around Elm's <a href="http://elm-lang.org/learn/Using-Signals.elm">signals</a> so that you do not need to dive into that concept yet.</p>
+
+<p>The key to wiring up your application is the concept of an <code>Address</code>. Every event handler in our <code>view</code> function reports to a particular address. It just sends chunks of data along. The <code>StartApp</code> package monitors all the messages coming in to this address and feeds them into the <code>update</code> function. The model gets updated and <a href="http://elm-lang.org/blog/Blazing-Fast-Html.elm">elm-html</a> takes care of rendering the changes efficiently.</p>
+
+<p>This means values flow through an Elm program in only one direction, something like this:</p>
+
+<p><img src="diagrams/signal-graph-summary.png" alt="Signal Graph Summary"></p>
+
+<p>The blue part is our core Elm program which is exactly the model/update/view pattern we have been discussing so far. When programming in Elm, you can mostly think inside this box and make great progress.</p>
+
+<p>Notice we are not <em>performing</em> actions as they get sent back to our app. We are simply sending some data over. This separation is a key detail, keeping our logic totally separate from our view code.</p>
+
+<h2>
+<a id="example-2-a-pair-of-counters" class="anchor" href="#example-2-a-pair-of-counters" aria-hidden="true"><span class="octicon octicon-link"></span></a>Example 2: A Pair of Counters</h2>
+
+<blockquote>
+<p><a href="https://evancz.github.io/elm-architecture-tutorial/examples/2">demo</a> / <a href="examples/2/">run locally</a></p>
+</blockquote>
+
+<p>In example 1 we created a basic counter, but how does that pattern scale when we want <em>two</em> counters? Can we keep things modular?</p>
+
+<p>Wouldn't it be great if we could reuse all the code from example 1? The crazy thing about the Elm Architecture is that <strong>we can reuse code with absolutely no changes</strong>. When we created the <code>Counter</code> module in example one, it encapsulated all the implementation details so we can use them elsewhere:</p>
+
+<div class="highlight highlight-elm"><pre><span class="pl-k">module</span> <span class="pl-c1">Counter</span> (<span class="pl-k">Model</span>, <span class="pl-en">init</span>, <span class="pl-k">Action</span>, <span class="pl-en">update</span>, <span class="pl-en">view</span>) <span class="pl-k">where</span>
+
+<span class="pl-k">type </span><span class="pl-c1">Model</span>
+
+<span class="pl-en">init</span> <span class="pl-k">:</span> <span class="pl-k">Int</span> <span class="pl-k">-&gt;</span> <span class="pl-k">Model</span>
+
+<span class="pl-k">type </span><span class="pl-c1">Action</span>
+
+<span class="pl-en">update</span> <span class="pl-k">:</span> <span class="pl-k">Action</span> <span class="pl-k">-&gt;</span> <span class="pl-k">Model</span> <span class="pl-k">-&gt;</span> <span class="pl-k">Model</span>
+
+<span class="pl-en">view</span> <span class="pl-k">:</span> <span class="pl-k">Signal</span>.<span class="pl-k">Address</span> <span class="pl-k">Action</span> <span class="pl-k">-&gt;</span> <span class="pl-k">Model</span> <span class="pl-k">-&gt;</span> <span class="pl-k">Html</span></pre></div>
+
+<p>Creating modular code is all about creating strong abstractions. We want boundaries which appropriately expose functionality and hide implementation. From outside of the <code>Counter</code> module, we just see a basic set of values: <code>Model</code>, <code>init</code>, <code>Action</code>, <code>update</code>, and <code>view</code>. We do not care at all how these things are implemented. In fact, it is <em>impossible</em> to know how these things are implemented. This means no one can rely on implementation details that were not made public.</p>
+
+<p>So we can reuse our <code>Counter</code> module, but now we need to use it to create our <code>CounterPair</code>. As always, we start with a <code>Model</code>:</p>
+
+<div class="highlight highlight-elm"><pre><span class="pl-k">type alias </span><span class="pl-c1">Model</span> <span class="pl-k">=</span>
+    { topCounter <span class="pl-k">:</span> <span class="pl-c1">Counter</span><span class="pl-k">.</span><span class="pl-c1">Model</span>
+    , bottomCounter <span class="pl-k">:</span> <span class="pl-c1">Counter</span><span class="pl-k">.</span><span class="pl-c1">Model</span>
+    }
+
+<span class="pl-en">init</span> <span class="pl-k">:</span> <span class="pl-k">Int</span> <span class="pl-k">-&gt;</span> <span class="pl-k">Int</span> <span class="pl-k">-&gt;</span> <span class="pl-k">Model</span>
+<span class="pl-en">init </span>top bottom <span class="pl-k">=</span>
+    { topCounter <span class="pl-k">=</span> <span class="pl-c1">Counter</span><span class="pl-k">.</span>init top
+    , bottomCounter <span class="pl-k">=</span> <span class="pl-c1">Counter</span><span class="pl-k">.</span>init bottom
+    }</pre></div>
+
+<p>Our <code>Model</code> is a record with two fields, one for each of the counters we would like to show on screen. This fully describes all of the application state. We also have an <code>init</code> function to create a new <code>Model</code> whenever we want.</p>
+
+<p>Next we describe the set of <code>Actions</code> we would like to support. This time our features should be: reset all counters, update the top counter, or update the bottom counter.</p>
+
+<div class="highlight highlight-elm"><pre><span class="pl-k">type </span><span class="pl-c1">Action</span>
+    <span class="pl-k">=</span> <span class="pl-c1">Reset</span>
+    <span class="pl-k">|</span> <span class="pl-c1">Top</span> <span class="pl-c1">Counter</span><span class="pl-k">.</span><span class="pl-c1">Action</span>
+    <span class="pl-k">|</span> <span class="pl-c1">Bottom</span> <span class="pl-c1">Counter</span><span class="pl-k">.</span><span class="pl-c1">Action</span></pre></div>
+
+<p>Notice that our <a href="http://elm-lang.org/learn/Union-Types.elm">union type</a> refers to the <code>Counter.Action</code> type, but we do not know the particulars of those actions. When we create our <code>update</code> function, we are mainly routing these <code>Counter.Actions</code> to the right place:</p>
+
+<div class="highlight highlight-elm"><pre><span class="pl-en">update</span> <span class="pl-k">:</span> <span class="pl-k">Action</span> <span class="pl-k">-&gt;</span> <span class="pl-k">Model</span> <span class="pl-k">-&gt;</span> <span class="pl-k">Model</span>
+<span class="pl-en">update </span>action model <span class="pl-k">=</span>
+  <span class="pl-k">case </span>action <span class="pl-k">of</span>
+    <span class="pl-c1">Reset</span> <span class="pl-k">-&gt;</span> init <span class="pl-c1">0</span> <span class="pl-c1">0</span>
+
+    <span class="pl-c1">Top</span> act <span class="pl-k">-&gt;</span>
+      { model <span class="pl-k">|</span>
+          topCounter <span class="pl-k">&lt;-</span> <span class="pl-c1">Counter</span><span class="pl-k">.</span>update act model<span class="pl-k">.</span>topCounter
+      }
+
+    <span class="pl-c1">Bottom</span> act <span class="pl-k">-&gt;</span>
+      { model <span class="pl-k">|</span>
+          bottomCounter <span class="pl-k">&lt;-</span> <span class="pl-c1">Counter</span><span class="pl-k">.</span>update act model<span class="pl-k">.</span>bottomCounter
+      }</pre></div>
+
+<p>So now the final thing to do is create a <code>view</code> function that shows both of our counters on screen along with a reset button.</p>
+
+<div class="highlight highlight-elm"><pre><span class="pl-en">view</span> <span class="pl-k">:</span> <span class="pl-k">Signal</span>.<span class="pl-k">Address</span> <span class="pl-k">Action</span> <span class="pl-k">-&gt;</span> <span class="pl-k">Model</span> <span class="pl-k">-&gt;</span> <span class="pl-k">Html</span>
+<span class="pl-en">view </span>address model <span class="pl-k">=</span>
+  div <span class="pl-c1">[]</span>
+    [ <span class="pl-c1">Counter</span><span class="pl-k">.</span>view (<span class="pl-c1">Signal</span><span class="pl-k">.</span>forwardTo address <span class="pl-c1">Top</span>) model<span class="pl-k">.</span>topCounter
+    , <span class="pl-c1">Counter</span><span class="pl-k">.</span>view (<span class="pl-c1">Signal</span><span class="pl-k">.</span>forwardTo address <span class="pl-c1">Bottom</span>) model<span class="pl-k">.</span>bottomCounter
+    , button [ onClick address <span class="pl-c1">Reset</span> ] [ text <span class="pl-s"><span class="pl-pds">"</span>RESET<span class="pl-pds">"</span></span> ]
+    ]</pre></div>
+
+<p>Notice that we are able to reuse the <code>Counter.view</code> function for both of our counters. For each counter we create a forwarding address. Essentially what we are doing here is saying, “these counters will tag all outgoing messages with <code>Top</code> or <code>Bottom</code> so we can tell the difference.”</p>
+
+<p>That is the whole thing. The cool thing is that we can keep nesting more and more. We can take the <code>CounterPair</code> module, expose the key values and functions, and create a <code>CounterPairPair</code> or whatever it is we need.</p>
+
+<h2>
+<a id="example-3-a-dynamic-list-of-counters" class="anchor" href="#example-3-a-dynamic-list-of-counters" aria-hidden="true"><span class="octicon octicon-link"></span></a>Example 3: A Dynamic List of Counters</h2>
+
+<blockquote>
+<p><a href="https://evancz.github.io/elm-architecture-tutorial/examples/3">demo</a> / <a href="examples/3/">run locally</a></p>
+</blockquote>
+
+<p>A pair of counters is cool, but what about a list of counters where we can add and remove counters as we see fit? Can this pattern work for that too?</p>
+
+<p>Again we can reuse the <code>Counter</code> module exactly as it was in example 1 and 2!</p>
+
+<div class="highlight highlight-elm"><pre><span class="pl-k">module</span> <span class="pl-c1">Counter</span> (<span class="pl-k">Model</span>, <span class="pl-en">init</span>, <span class="pl-k">Action</span>, <span class="pl-en">update</span>, <span class="pl-en">view</span>)</pre></div>
+
+<p>That means we can just get started on our <code>CounterList</code> module. As always, we begin with our <code>Model</code>:</p>
+
+<div class="highlight highlight-elm"><pre><span class="pl-k">type alias </span><span class="pl-c1">Model</span> <span class="pl-k">=</span>
+    { counters <span class="pl-k">:</span> <span class="pl-c1">List</span> ( <span class="pl-c1">ID</span>, <span class="pl-c1">Counter</span><span class="pl-k">.</span><span class="pl-c1">Model</span> )
+    , nextID <span class="pl-k">:</span> <span class="pl-c1">ID</span>
+    }
+
+<span class="pl-k">type alias </span><span class="pl-c1">ID</span> <span class="pl-k">=</span> <span class="pl-c1">Int</span></pre></div>
+
+<p>Now our model has a list of counters, each annotated with a unique ID. These IDs allow us to distinguish between them, so if we need to update counter number 4 we have a nice way to refer to it. (This ID also gives us something convenient to <a href="http://package.elm-lang.org/packages/evancz/elm-html/latest/Html-Attributes#key"><code>key</code></a> on when we are thinking about optimizing rendering, but that is not the focus of this tutorial!) Our model also contains a
+<code>nextID</code> which helps us assign unique IDs to each counter as we add new ones.</p>
+
+<p>Now we can define the set of <code>Actions</code> that can be performed on our model. We want to be able to add counters, remove counters, and update certain counters.</p>
+
+<div class="highlight highlight-elm"><pre><span class="pl-k">type </span><span class="pl-c1">Action</span>
+    <span class="pl-k">=</span> <span class="pl-c1">Insert</span>
+    <span class="pl-k">|</span> <span class="pl-c1">Remove</span>
+    <span class="pl-k">|</span> <span class="pl-c1">Modify</span> <span class="pl-c1">ID</span> <span class="pl-c1">Counter</span><span class="pl-k">.</span><span class="pl-c1">Action</span></pre></div>
+
+<p>Our <code>Action</code> <a href="http://elm-lang.org/learn/Union-Types.elm">union type</a> is shockingly close to the high-level description. Now we can define our <code>update</code> function.</p>
+
+<div class="highlight highlight-elm"><pre><span class="pl-en">update</span> <span class="pl-k">:</span> <span class="pl-k">Action</span> <span class="pl-k">-&gt;</span> <span class="pl-k">Model</span> <span class="pl-k">-&gt;</span> <span class="pl-k">Model</span>
+<span class="pl-en">update </span>action model <span class="pl-k">=</span>
+  <span class="pl-k">case </span>action <span class="pl-k">of</span>
+    <span class="pl-c1">Insert</span> <span class="pl-k">-&gt;</span>
+      <span class="pl-k">let </span>newCounter <span class="pl-k">=</span> ( model<span class="pl-k">.</span>nextID, <span class="pl-c1">Counter</span><span class="pl-k">.</span>init <span class="pl-c1">0</span> )
+          newCounters <span class="pl-k">=</span> model<span class="pl-k">.</span>counters <span class="pl-k">++</span> [ newCounter ]
+      <span class="pl-k">in</span>
+          { model <span class="pl-k">|</span>
+              counters <span class="pl-k">&lt;-</span> newCounters,
+              nextID <span class="pl-k">&lt;-</span> model<span class="pl-k">.</span>nextID <span class="pl-k">+</span> <span class="pl-c1">1</span>
+          }
+
+    <span class="pl-c1">Remove</span> <span class="pl-k">-&gt;</span>
+      { model <span class="pl-k">|</span> counters <span class="pl-k">&lt;-</span> <span class="pl-c1">List</span><span class="pl-k">.</span>drop <span class="pl-c1">1</span> model<span class="pl-k">.</span>counters }
+
+    <span class="pl-c1">Modify</span> id counterAction <span class="pl-k">-&gt;</span>
+      <span class="pl-k">let </span>updateCounter (counterID, counterModel) <span class="pl-k">=</span>
+            <span class="pl-k">if </span>counterID <span class="pl-k">==</span> id
+                <span class="pl-k">then </span>(counterID, <span class="pl-c1">Counter</span><span class="pl-k">.</span>update counterAction counterModel)
+                <span class="pl-k">else </span>(counterID, counterModel)
+      <span class="pl-k">in</span>
+          { model <span class="pl-k">|</span> counters <span class="pl-k">&lt;-</span> <span class="pl-c1">List</span><span class="pl-k">.</span>map updateCounter model<span class="pl-k">.</span>counters }</pre></div>
+
+<p>Here is a high-level description of each case:</p>
+
+<ul>
+<li><p><code>Insert</code> — First we create a new counter and put it at the end of
+our counter list. Then we increment our <code>nextID</code> so that we have a fresh
+ID next time around.</p></li>
+<li><p><code>Remove</code> — Drop the first member of our counter list.</p></li>
+<li><p><code>Modify</code> — Run through all of our counters. If we find one with
+a matching ID, we perform the given <code>Action</code> on that counter.</p></li>
+</ul>
+
+<p>All that is left to do now is to define the <code>view</code>.</p>
+
+<div class="highlight highlight-elm"><pre><span class="pl-en">view</span> <span class="pl-k">:</span> <span class="pl-k">Signal</span>.<span class="pl-k">Address</span> <span class="pl-k">Action</span> <span class="pl-k">-&gt;</span> <span class="pl-k">Model</span> <span class="pl-k">-&gt;</span> <span class="pl-k">Html</span>
+<span class="pl-en">view </span>address model <span class="pl-k">=</span>
+  <span class="pl-k">let </span>counters <span class="pl-k">=</span> <span class="pl-c1">List</span><span class="pl-k">.</span>map (viewCounter address) model<span class="pl-k">.</span>counters
+      remove <span class="pl-k">=</span> button [ onClick address <span class="pl-c1">Remove</span> ] [ text <span class="pl-s"><span class="pl-pds">"</span>Remove<span class="pl-pds">"</span></span> ]
+      insert <span class="pl-k">=</span> button [ onClick address <span class="pl-c1">Insert</span> ] [ text <span class="pl-s"><span class="pl-pds">"</span>Add<span class="pl-pds">"</span></span> ]
+  <span class="pl-k">in</span>
+      div <span class="pl-c1">[]</span> ([remove, insert] <span class="pl-k">++</span> counters)
+
+<span class="pl-en">viewCounter</span> <span class="pl-k">:</span> <span class="pl-k">Signal</span>.<span class="pl-k">Address</span> <span class="pl-k">Action</span> <span class="pl-k">-&gt;</span> (<span class="pl-k">ID</span>, <span class="pl-k">Counter</span>.<span class="pl-k">Model</span>) <span class="pl-k">-&gt;</span> <span class="pl-k">Html</span>
+<span class="pl-en">viewCounter </span>address (id, model) <span class="pl-k">=</span>
+  <span class="pl-c1">Counter</span><span class="pl-k">.</span>view (<span class="pl-c1">Signal</span><span class="pl-k">.</span>forwardTo address (<span class="pl-c1">Modify</span> id)) model</pre></div>
+
+<p>The fun part here is the <code>viewCounter</code> function. It uses the same old
+<code>Counter.view</code> function, but in this case we provide a forwarding address that annotates all messages with the ID of the particular counter that is getting rendered.</p>
+
+<p>When we create the actual <code>view</code> function, we map <code>viewCounter</code> over all of our counters and create add and remove buttons that report to the <code>address</code> directly.</p>
+
+<p>This ID trick can be used any time you want a dynamic number of subcomponents. Counters are very simple, but the pattern would work exactly the same if you had a list of user profiles or tweets or newsfeed items or product details.</p>
+
+<h2>
+<a id="example-4-a-fancier-list-of-counters" class="anchor" href="#example-4-a-fancier-list-of-counters" aria-hidden="true"><span class="octicon octicon-link"></span></a>Example 4: A Fancier List of Counters</h2>
+
+<blockquote>
+<p><a href="https://evancz.github.io/elm-architecture-tutorial/examples/4">demo</a> / <a href="examples/4/">run locally</a></p>
+</blockquote>
+
+<p>Okay, keeping things simple and modular on a dynamic list of counters is pretty cool, but instead of a general remove button, what if each counter had its own specific remove button? Surely <em>that</em> will mess things up!</p>
+
+<p>Nah, it works.</p>
+
+<p>In this case our goals mean that we need a new way to view a <code>Counter</code> that adds a remove button. Interestingly, we can keep the <code>view</code> function from before and add a new <code>viewWithRemoveButton</code> function that provides a slightly different view of our underlying <code>Model</code>. This is pretty cool. We do not need to duplicate any code or do any crazy subtyping or overloading. We just add a new function to the public API to expose new functionality!</p>
+
+<div class="highlight highlight-elm"><pre><span class="pl-k">module</span> <span class="pl-c1">Counter</span> (<span class="pl-k">Model</span>, <span class="pl-en">init</span>, <span class="pl-k">Action</span>, <span class="pl-en">update</span>, <span class="pl-en">view</span>, <span class="pl-en">viewWithRemoveButton</span>, <span class="pl-k">Context</span>) <span class="pl-k">where</span>
+
+<span class="pl-k">...</span>
+
+<span class="pl-k">type alias </span><span class="pl-c1">Context</span> <span class="pl-k">=</span>
+    { actions <span class="pl-k">:</span> <span class="pl-c1">Signal</span><span class="pl-k">.</span><span class="pl-c1">Address</span> <span class="pl-c1">Action</span>
+    , remove <span class="pl-k">:</span> <span class="pl-c1">Signal</span><span class="pl-k">.</span><span class="pl-c1">Address</span> <span class="pl-c1">()</span>
+    }
+
+<span class="pl-en">viewWithRemoveButton</span> <span class="pl-k">:</span> <span class="pl-k">Context</span> <span class="pl-k">-&gt;</span> <span class="pl-k">Model</span> <span class="pl-k">-&gt;</span> <span class="pl-k">Html</span>
+<span class="pl-en">viewWithRemoveButton </span>context model <span class="pl-k">=</span>
+  div <span class="pl-c1">[]</span>
+    [ button [ onClick context<span class="pl-k">.</span>actions <span class="pl-c1">Decrement</span> ] [ text <span class="pl-s"><span class="pl-pds">"</span>-<span class="pl-pds">"</span></span> ]
+    , div [ countStyle ] [ text (toString model) ]
+    , button [ onClick context<span class="pl-k">.</span>actions <span class="pl-c1">Increment</span> ] [ text <span class="pl-s"><span class="pl-pds">"</span>+<span class="pl-pds">"</span></span> ]
+    , div [ countStyle ] <span class="pl-c1">[]</span>
+    , button [ onClick context<span class="pl-k">.</span>remove <span class="pl-c1">()</span> ] [ text <span class="pl-s"><span class="pl-pds">"</span>X<span class="pl-pds">"</span></span> ]
+    ]</pre></div>
+
+<p>The <code>viewWithRemoveButton</code> function adds one extra button. Notice that the increment/decrement buttons send messages to the <code>actions</code> address but the delete button sends messages to the <code>remove</code> address. The messages we send along to <code>remove</code> are essentially saying, “hey, whoever owns me, remove me!” It is up to whoever owns this particular counter to do the removing.</p>
+
+<p>Now that we have our new <code>viewWithRemoveButton</code>, we can create a <code>CounterList</code> module which puts all the individual counters together. The <code>Model</code> is the same as in example 3: a list of counters and a unique ID.</p>
+
+<div class="highlight highlight-elm"><pre><span class="pl-k">type alias </span><span class="pl-c1">Model</span> <span class="pl-k">=</span>
+    { counters <span class="pl-k">:</span> <span class="pl-c1">List</span> ( <span class="pl-c1">ID</span>, <span class="pl-c1">Counter</span><span class="pl-k">.</span><span class="pl-c1">Model</span> )
+    , nextID <span class="pl-k">:</span> <span class="pl-c1">ID</span>
+    }
+
+<span class="pl-k">type alias </span><span class="pl-c1">ID</span> <span class="pl-k">=</span> <span class="pl-c1">Int</span></pre></div>
+
+<p>Our set of actions is a bit different. Instead of removing any old counter, we want to remove a specific one, so the <code>Remove</code> case now holds an ID.</p>
+
+<div class="highlight highlight-elm"><pre><span class="pl-k">type </span><span class="pl-c1">Action</span>
+    <span class="pl-k">=</span> <span class="pl-c1">Insert</span>
+    <span class="pl-k">|</span> <span class="pl-c1">Remove</span> <span class="pl-c1">ID</span>
+    <span class="pl-k">|</span> <span class="pl-c1">Modify</span> <span class="pl-c1">ID</span> <span class="pl-c1">Counter</span><span class="pl-k">.</span><span class="pl-c1">Action</span></pre></div>
+
+<p>The <code>update</code> function is pretty similar to example 4 as well.</p>
+
+<div class="highlight highlight-elm"><pre><span class="pl-en">update</span> <span class="pl-k">:</span> <span class="pl-k">Action</span> <span class="pl-k">-&gt;</span> <span class="pl-k">Model</span> <span class="pl-k">-&gt;</span> <span class="pl-k">Model</span>
+<span class="pl-en">update </span>action model <span class="pl-k">=</span>
+  <span class="pl-k">case </span>action <span class="pl-k">of</span>
+    <span class="pl-c1">Insert</span> <span class="pl-k">-&gt;</span>
+      { model <span class="pl-k">|</span>
+          counters <span class="pl-k">&lt;-</span> ( model<span class="pl-k">.</span>nextID, <span class="pl-c1">Counter</span><span class="pl-k">.</span>init <span class="pl-c1">0</span> ) <span class="pl-k">::</span> model<span class="pl-k">.</span>counters,
+          nextID <span class="pl-k">&lt;-</span> model<span class="pl-k">.</span>nextID <span class="pl-k">+</span> <span class="pl-c1">1</span>
+      }
+
+    <span class="pl-c1">Remove</span> id <span class="pl-k">-&gt;</span>
+      { model <span class="pl-k">|</span>
+          counters <span class="pl-k">&lt;-</span> <span class="pl-c1">List</span><span class="pl-k">.</span>filter (<span class="pl-k">\</span>(counterID, _) <span class="pl-k">-&gt;</span> counterID <span class="pl-k">/=</span> id) model<span class="pl-k">.</span>counters
+      }
+
+    <span class="pl-c1">Modify</span> id counterAction <span class="pl-k">-&gt;</span>
+      <span class="pl-k">let </span>updateCounter (counterID, counterModel) <span class="pl-k">=</span>
+            <span class="pl-k">if </span>counterID <span class="pl-k">==</span> id
+                <span class="pl-k">then </span>(counterID, <span class="pl-c1">Counter</span><span class="pl-k">.</span>update counterAction counterModel)
+                <span class="pl-k">else </span>(counterID, counterModel)
+      <span class="pl-k">in</span>
+          { model <span class="pl-k">|</span> counters <span class="pl-k">&lt;-</span> <span class="pl-c1">List</span><span class="pl-k">.</span>map updateCounter model<span class="pl-k">.</span>counters }</pre></div>
+
+<p>In the case of <code>Remove</code>, we take out the counter that has the ID we are supposed to remove. Otherwise, the cases are quite close to how they were before.</p>
+
+<p>Finally, we put it all together in the <code>view</code>:</p>
+
+<div class="highlight highlight-elm"><pre><span class="pl-en">view</span> <span class="pl-k">:</span> <span class="pl-k">Signal</span>.<span class="pl-k">Address</span> <span class="pl-k">Action</span> <span class="pl-k">-&gt;</span> <span class="pl-k">Model</span> <span class="pl-k">-&gt;</span> <span class="pl-k">Html</span>
+<span class="pl-en">view </span>address model <span class="pl-k">=</span>
+  <span class="pl-k">let </span>insert <span class="pl-k">=</span> button [ onClick address <span class="pl-c1">Insert</span> ] [ text <span class="pl-s"><span class="pl-pds">"</span>Add<span class="pl-pds">"</span></span> ]
+  <span class="pl-k">in</span>
+      div <span class="pl-c1">[]</span> (insert <span class="pl-k">::</span> <span class="pl-c1">List</span><span class="pl-k">.</span>map (viewCounter address) model<span class="pl-k">.</span>counters)
+
+<span class="pl-en">viewCounter</span> <span class="pl-k">:</span> <span class="pl-k">Signal</span>.<span class="pl-k">Address</span> <span class="pl-k">Action</span> <span class="pl-k">-&gt;</span> (<span class="pl-k">ID</span>, <span class="pl-k">Counter</span>.<span class="pl-k">Model</span>) <span class="pl-k">-&gt;</span> <span class="pl-k">Html</span>
+<span class="pl-en">viewCounter </span>address (id, model) <span class="pl-k">=</span>
+  <span class="pl-k">let </span>context <span class="pl-k">=</span>
+        <span class="pl-c1">Counter</span><span class="pl-k">.</span><span class="pl-c1">Context</span>
+          (<span class="pl-c1">Signal</span><span class="pl-k">.</span>forwardTo address (<span class="pl-c1">Modify</span> id))
+          (<span class="pl-c1">Signal</span><span class="pl-k">.</span>forwardTo address (always (<span class="pl-c1">Remove</span> id)))
+  <span class="pl-k">in</span>
+      <span class="pl-c1">Counter</span><span class="pl-k">.</span>viewWithRemoveButton context model</pre></div>
+
+<p>In our <code>viewCounter</code> function, we construct the <code>Counter.Context</code> to pass in all the nesessary forwarding addresses. In both cases we annotate each <code>Counter.Action</code> so that we know which counter to modify or remove.</p>
+
+<h2>
+<a id="big-lessons-so-far" class="anchor" href="#big-lessons-so-far" aria-hidden="true"><span class="octicon octicon-link"></span></a>Big Lessons So Far</h2>
+
+<p><strong>Basic Pattern</strong> — Everything is built around a <code>Model</code>, a way to <code>update</code> that model, and a way to <code>view</code> that model. Everything is a variation on this basic pattern.</p>
+
+<p><strong>Nesting Modules</strong> — Forwarding addresses makes it easy to nest our basic pattern, hiding implementation details entirely. We can nest this pattern arbitrarily deep, and each level only needs to know about what is going on one level lower.</p>
+
+<p><strong>Adding Context</strong> — Sometimes to <code>update</code> or <code>view</code> our model, extra information is needed. We can always add some <code>Context</code> to these functions and pass in all the additional information we need without complicating our <code>Model</code>.</p>
+
+<div class="highlight highlight-elm"><pre><span class="pl-en">update</span> <span class="pl-k">:</span> <span class="pl-k">Context</span> <span class="pl-k">-&gt;</span> <span class="pl-k">Action</span> <span class="pl-k">-&gt;</span> <span class="pl-k">Model</span> <span class="pl-k">-&gt;</span> <span class="pl-k">Model</span>
+<span class="pl-en">view</span> <span class="pl-k">:</span> <span class="pl-k">Context</span>' <span class="pl-k">-&gt;</span> <span class="pl-k">Model</span> <span class="pl-k">-&gt;</span> <span class="pl-k">Html</span></pre></div>
+
+<p>At every level of nesting we can derive the specific <code>Context</code> needed for each submodule.</p>
+
+<p><strong>Testing is Easy</strong> — All of the functions we have created are <a href="http://en.wikipedia.org/wiki/Pure_function">pure functions</a>. That makes it extremely easy to test your <code>update</code> function. There is no special initialization or mocking or configuration step, you just call the function with the arguments you would like to test.</p>
+
+<h2>
+<a id="example-5-random-gif-viewer" class="anchor" href="#example-5-random-gif-viewer" aria-hidden="true"><span class="octicon octicon-link"></span></a>Example 5: Random GIF Viewer</h2>
+
+<blockquote>
+<p><a href="https://evancz.github.io/elm-architecture-tutorial/examples/5">demo</a> / <a href="examples/5/">run locally</a></p>
+</blockquote>
+
+<p>So we have covered how to create infinitely nestable components, but what happens when we want to do an HTTP request from somewhere in there? Or talk to a database? This example starts using <a href="http://package.elm-lang.org/packages/evancz/elm-lang/latest">the <code>elm-effects</code> package</a> to create a simple component that fetches random gifs from giphy.com with the topic “funny cats”. </p>
+
+<p>As you look through <a href="examples/5/RandomGif.elm">the implementation</a>, notice that it is pretty much the same code as the counter in example 1. The <code>Model</code> is very typical:</p>
+
+<div class="highlight highlight-elm"><pre><span class="pl-k">type alias </span><span class="pl-c1">Model</span> <span class="pl-k">=</span>
+    { topic <span class="pl-k">:</span> <span class="pl-c1">String</span>
+    , gifUrl <span class="pl-k">:</span> <span class="pl-c1">String</span>
+    }</pre></div>
+
+<p>We need to know what the <code>topic</code> of the finder is and what <code>gifUrl</code> we are showing right this second. The only new thing in this example is that <code>init</code> and <code>update</code> have slightly fancier types:</p>
+
+<div class="highlight highlight-elm"><pre><span class="pl-en">init</span> <span class="pl-k">:</span> <span class="pl-k">String</span> <span class="pl-k">-&gt;</span> (<span class="pl-k">Model</span>, <span class="pl-k">Effects</span> <span class="pl-k">Action</span>)
+
+<span class="pl-en">update</span> <span class="pl-k">:</span> <span class="pl-k">Action</span> <span class="pl-k">-&gt;</span> <span class="pl-k">Model</span> <span class="pl-k">-&gt;</span> (<span class="pl-k">Model</span>, <span class="pl-k">Effects</span> <span class="pl-k">Action</span>)</pre></div>
+
+<p>Instead of returning just a new <code>Model</code> we also give back some effects that we would like to run. So we will be using <a href="http://package.elm-lang.org/packages/evancz/elm-lang/latest/Effects">the <code>Effects</code> API</a>, which looks something like this:</p>
+
+<div class="highlight highlight-elm"><pre><span class="pl-k">module</span> <span class="pl-c1">Effects</span> <span class="pl-k">where</span>
+
+<span class="pl-k">type </span><span class="pl-c1">Effects</span> a
+
+<span class="pl-en">none</span> <span class="pl-k">:</span> <span class="pl-k">Effects</span> <span class="pl-smi">a</span>
+  <span class="pl-c">-- don't do anything</span>
+
+<span class="pl-en">task</span> <span class="pl-k">:</span> <span class="pl-k">Task</span> <span class="pl-k">Never</span> <span class="pl-smi">a</span> <span class="pl-k">-&gt;</span> <span class="pl-k">Effects</span> <span class="pl-smi">a</span>
+  <span class="pl-c">-- request a task, do HTTP and database stuff</span></pre></div>
+
+<p>The <code>Effects</code> type is essentially a data structure holding a bunch of independent tasks that will get run at some later point. Let’s get a better feeling of how this works by checking out how <code>update</code> works in this example:</p>
+
+<div class="highlight highlight-elm"><pre><span class="pl-k">type </span><span class="pl-c1">Action</span>
+    <span class="pl-k">=</span> <span class="pl-c1">RequestMore</span>
+    <span class="pl-k">|</span> <span class="pl-c1">NewGif</span> (<span class="pl-c1">Maybe</span> <span class="pl-c1">String</span>)
+
+
+<span class="pl-en">update</span> <span class="pl-k">:</span> <span class="pl-k">Action</span> <span class="pl-k">-&gt;</span> <span class="pl-k">Model</span> <span class="pl-k">-&gt;</span> (<span class="pl-k">Model</span>, <span class="pl-k">Effects</span> <span class="pl-k">Action</span>)
+<span class="pl-en">update </span>msg model <span class="pl-k">=</span>
+  <span class="pl-k">case </span>msg <span class="pl-k">of</span>
+    <span class="pl-c1">RequestMore</span> <span class="pl-k">-&gt;</span>
+      ( model
+      , getRandomGif model<span class="pl-k">.</span>topic
+      )
+
+    <span class="pl-c1">NewGif</span> maybeUrl <span class="pl-k">-&gt;</span>
+      ( <span class="pl-c1">Model</span> model<span class="pl-k">.</span>topic (<span class="pl-c1">Maybe</span><span class="pl-k">.</span>withDefault model<span class="pl-k">.</span>gifUrl maybeUrl)
+      , <span class="pl-c1">Effects</span><span class="pl-k">.</span>none
+      )
+
+<span class="pl-c">-- getRandomGif : String -&gt; Effects Action</span></pre></div>
+
+<p>So the user can trigger a <code>RequestMore</code> action by clicking the “More Please!” button, and when the server responds it will give us a <code>NewGif</code> action. We handle both these scenarios in our <code>update</code> function.</p>
+
+<p>In the case of <code>RequestMore</code> first return the existing model. The user just clicked a button, there is nothing to change right now. We also create an <code>Effects Action</code> using the <code>getRandomGif</code> function. We will get to how <code>getRandomGif</code> is defined soon. For now we just need to know that when an <code>Effects Action</code> is run, it will produce a bunch of <code>Action</code> values that will be routed throughout the application. So <code>getRandomGif model.topic</code> will eventually result in a action like this:</p>
+
+<div class="highlight highlight-elm"><pre><span class="pl-c1">NewGif</span> (<span class="pl-c1">Just</span> <span class="pl-s"><span class="pl-pds">"</span>http://s3.amazonaws.com/giphygifs/media/ka1aeBvFCSLD2/giphy.gif<span class="pl-pds">"</span></span>)</pre></div>
+
+<p>It returns a <code>Maybe</code> because the request to the server may fail. That <code>Action</code> will get fed right back into our <code>update</code> function. So when we take the <code>NewGif</code> route we just update the current <code>image</code> if possible. If the request failed, we just stick with the current <code>model.image</code>.</p>
+
+<p>We see the same kind of thing happening in <code>init</code> which defines the initial model and asks for a GIF in the correct topic from giphy.com’s API.</p>
+
+<div class="highlight highlight-elm"><pre><span class="pl-en">init</span> <span class="pl-k">:</span> <span class="pl-k">String</span> <span class="pl-k">-&gt;</span> (<span class="pl-k">Model</span>, <span class="pl-k">Effects</span> <span class="pl-k">Action</span>)
+<span class="pl-en">init </span>topic <span class="pl-k">=</span>
+  ( <span class="pl-c1">Model</span> topic <span class="pl-s"><span class="pl-pds">"</span>assets/waiting.gif<span class="pl-pds">"</span></span>
+  , getRandomGif topic
+  )
+
+<span class="pl-c">-- getRandomGif : String -&gt; Effects Action</span></pre></div>
+
+<p>Again, when the random GIF effect is complete, it will produce an <code>Action</code> that gets routed to our <code>update</code> function.</p>
+
+<blockquote>
+<p><strong>Note:</strong> So far we have been using the <code>StartApp.Simple</code> module from <a href="http://package.elm-lang.org/packages/evancz/start-app/latest">the start-app package</a>, but now upgrade to the <code>StartApp</code> module. It is able to handle the complexity of more realistic web apps. It has <a href="http://package.elm-lang.org/packages/evancz/start-app/latest/StartApp">a slightly fancier API</a>. The crucial change is that it can handle our new <code>init</code> and <code>update</code> types.</p>
+</blockquote>
+
+<p>One of the crucial aspects of this example is the <code>getRandomGif</code> function that actually describes how to get a random GIF. It uses <a href="http://elm-lang.org/guide/reactivity#tasks">tasks</a> and <a href="http://package.elm-lang.org/packages/evancz/elm-http/latest">the <code>Http</code> package</a>, and I will try to give an overview of how these things are being used as we go. Let’s look at the definition:</p>
+
+<div class="highlight highlight-elm"><pre><span class="pl-en">getRandomGif</span> <span class="pl-k">:</span> <span class="pl-k">String</span> <span class="pl-k">-&gt;</span> <span class="pl-k">Effects</span> <span class="pl-k">Action</span>
+<span class="pl-en">getRandomGif </span>topic <span class="pl-k">=</span>
+  <span class="pl-c1">Http</span><span class="pl-k">.</span>get decodeImageUrl (randomUrl topic)
+    <span class="pl-k">|&gt;</span> <span class="pl-c1">Task</span><span class="pl-k">.</span>toMaybe
+    <span class="pl-k">|&gt;</span> <span class="pl-c1">Task</span><span class="pl-k">.</span>map <span class="pl-c1">NewImage</span>
+    <span class="pl-k">|&gt;</span> <span class="pl-c1">Effects</span><span class="pl-k">.</span>task
+
+<span class="pl-c">-- The first line there created an HTTP GET request. It tries to</span>
+<span class="pl-c">-- get some JSON at `randomUrl topic` and decodes the result</span>
+<span class="pl-c">-- with `decodeImage`. Both are defined below!</span>
+<span class="pl-c">--</span>
+<span class="pl-c">-- Next we use `Task.toMaybe` to capture any potential failures and</span>
+<span class="pl-c">-- apply the `NewImage` tag to turn the result into a `Action`.</span>
+<span class="pl-c">-- Finally we turn it into an `Effects` value that can be used in our</span>
+<span class="pl-c">-- `init` or `update` functions.</span>
+
+
+<span class="pl-c">-- Given a topic, construct a URL for the giphy API.</span>
+<span class="pl-en">randomUrl</span> <span class="pl-k">:</span> <span class="pl-k">String</span> <span class="pl-k">-&gt;</span> <span class="pl-k">String</span>
+<span class="pl-en">randomUrl </span>topic <span class="pl-k">=</span>
+  <span class="pl-c1">Http</span><span class="pl-k">.</span>url <span class="pl-s"><span class="pl-pds">"</span>http://api.giphy.com/v1/gifs/random<span class="pl-pds">"</span></span>
+    [ <span class="pl-s"><span class="pl-pds">"</span>api_key<span class="pl-pds">"</span></span> <span class="pl-k">=&gt;</span> <span class="pl-s"><span class="pl-pds">"</span>dc6zaTOxFJmzC<span class="pl-pds">"</span></span>
+    , <span class="pl-s"><span class="pl-pds">"</span>tag<span class="pl-pds">"</span></span> <span class="pl-k">=&gt;</span> topic
+    ]
+
+
+<span class="pl-c">-- A JSON decoder that takes a big chunk of JSON spit out by</span>
+<span class="pl-c">-- giphy and extracts the string at `json.data.image_url` </span>
+<span class="pl-en">decodeImageUrl</span> <span class="pl-k">:</span> <span class="pl-k">Json</span>.<span class="pl-k">Decoder</span> <span class="pl-k">String</span>
+<span class="pl-en">decodeImageUrl </span><span class="pl-k">=</span>
+  <span class="pl-c1">Json</span><span class="pl-k">.</span>at [<span class="pl-s"><span class="pl-pds">"</span>data<span class="pl-pds">"</span></span>, <span class="pl-s"><span class="pl-pds">"</span>image_url<span class="pl-pds">"</span></span>] <span class="pl-c1">Json</span><span class="pl-k">.</span>string</pre></div>
+
+<p>Once we have written this up, we are able to reuse <code>getRandomGif</code> in our <code>init</code> and <code>update</code> functions.</p>
+
+<p>One of the interesting things about the task returned by <code>getRandomGif</code> is that it can <code>Never</code> fail. The idea is that any potential failure <em>must</em> be handled explicitly. We do not want any tasks failing silently.</p>
+
+<p>I am going to try to explain exactly how that works, but it is not crucial to get every piece of this to use things! Okay, so every <code>Task</code> has a failure type and a success type. For example, an HTTP task may have a type like this <code>Task Http.Error String</code> such that we can fail with an <code>Http.Error</code> or succeed with a <code>String</code>. This makes it nice to chain a bunch of tasks together without worrying too much about errors. Now lets say our component requests a task, but the task fails. What happens then? Who gets notified? How do we recover? By making the failure type <code>Never</code> we force any potential errors into the success type such that they can be handled explicitly by the component. In our case, we use <code>Task.toMaybe : Task x a -&gt; Task y (Maybe a)</code> so our <code>update</code> function must explicitly handle HTTP failures. This means tasks cannot silently fail, you always handle potential errors explicitly.</p>
+
+<h2>
+<a id="example-6-pair-of-random-gif-viewers" class="anchor" href="#example-6-pair-of-random-gif-viewers" aria-hidden="true"><span class="octicon octicon-link"></span></a>Example 6: Pair of random GIF viewers</h2>
+
+<blockquote>
+<p><a href="https://evancz.github.io/elm-architecture-tutorial/examples/6">demo</a> / <a href="examples/6/">run locally</a></p>
+</blockquote>
+
+<p>Alright, effects can be done, but what about <em>nested</em> effects? Did you think about that?! This example reuses the exact code from the GIF viewer in example 5 to create a pair of independent GIF viewers.</p>
+
+<p>As you look through <a href="examples/6/RandomGifPair.elm">the implementation</a>, notice that it is pretty much the same code as the pair of counters in example 2. The <code>Model</code> is defined as two <code>RandomGif.Model</code> values:</p>
+
+<div class="highlight highlight-elm"><pre><span class="pl-k">type alias </span><span class="pl-c1">Model</span> <span class="pl-k">=</span>
+    { left <span class="pl-k">:</span> <span class="pl-c1">RandomGif</span><span class="pl-k">.</span><span class="pl-c1">Model</span>
+    , right <span class="pl-k">:</span> <span class="pl-c1">RandomGif</span><span class="pl-k">.</span><span class="pl-c1">Model</span>
+    }</pre></div>
+
+<p>This lets us keep track of each independently. Our actions are just routing messages to the appropriate subcomponent.</p>
+
+<div class="highlight highlight-elm"><pre><span class="pl-k">type </span><span class="pl-c1">Action</span>
+    <span class="pl-k">=</span> <span class="pl-c1">Left</span> <span class="pl-c1">RandomGif</span><span class="pl-k">.</span><span class="pl-c1">Action</span>
+    <span class="pl-k">|</span> <span class="pl-c1">Right</span> <span class="pl-c1">RandomGif</span><span class="pl-k">.</span><span class="pl-c1">Action</span></pre></div>
+
+<p>The interesting thing is that we actually use the <code>Left</code> and <code>Right</code> tags a bit in our <code>update</code> and <code>init</code> functions.</p>
+
+<div class="highlight highlight-elm"><pre><span class="pl-c">-- Effects.map : (a -&gt; b) -&gt; Effects a -&gt; Effects b</span>
+
+<span class="pl-en">update</span> <span class="pl-k">:</span> <span class="pl-k">Action</span> <span class="pl-k">-&gt;</span> <span class="pl-k">Model</span> <span class="pl-k">-&gt;</span> (<span class="pl-k">Model</span>, <span class="pl-k">Effects</span> <span class="pl-k">Action</span>)
+<span class="pl-en">update </span>action model <span class="pl-k">=</span>
+  <span class="pl-k">case </span>action <span class="pl-k">of</span>
+    <span class="pl-c1">Left</span> msg <span class="pl-k">-&gt;</span>
+      <span class="pl-k">let</span>
+        (left, fx) <span class="pl-k">=</span> <span class="pl-c1">RandomGif</span><span class="pl-k">.</span>update msg model<span class="pl-k">.</span>left
+      <span class="pl-k">in</span>
+        ( <span class="pl-c1">Model</span> left model<span class="pl-k">.</span>right
+        , <span class="pl-c1">Effects</span><span class="pl-k">.</span>map <span class="pl-c1">Left</span> fx
+        )
+
+    <span class="pl-c1">Right</span> msg <span class="pl-k">-&gt;</span>
+      <span class="pl-k">let</span>
+        (right, fx) <span class="pl-k">=</span> <span class="pl-c1">RandomGif</span><span class="pl-k">.</span>update msg model<span class="pl-k">.</span>right
+      <span class="pl-k">in</span>
+        ( <span class="pl-c1">Model</span> model<span class="pl-k">.</span>left right
+        , <span class="pl-c1">Effects</span><span class="pl-k">.</span>map <span class="pl-c1">Right</span> fx
+        )</pre></div>
+
+<p>So in each branch we call the <code>RandomGif.update</code> function which is returning a new model and some effects we are calling <code>fx</code>. We return an updated model like normal, but we need to do some extra work on our effects. Instead of returning them directly, we use <a href="http://package.elm-lang.org/packages/evancz/elm-effects/latest/Effects#map"><code>Effects.map</code></a> function to turn them into the same kind of <code>Action</code>. This works very much like <code>Signal.forwardTo</code>, letting us tag the values to make it clear how they should be routed.</p>
+
+<p>The same thing happens in the <code>init</code> function. We provide a topic for each random GIF viewer and get back an initial model and some effects.</p>
+
+<div class="highlight highlight-elm"><pre><span class="pl-en">init</span> <span class="pl-k">:</span> <span class="pl-k">String</span> <span class="pl-k">-&gt;</span> <span class="pl-k">String</span> <span class="pl-k">-&gt;</span> (<span class="pl-k">Model</span>, <span class="pl-k">Effects</span> <span class="pl-k">Action</span>)
+<span class="pl-en">init </span>leftTopic rightTopic <span class="pl-k">=</span>
+  <span class="pl-k">let</span>
+    (left, leftFx) <span class="pl-k">=</span> <span class="pl-c1">RandomGif</span><span class="pl-k">.</span>init leftTopic
+    (right, rightFx) <span class="pl-k">=</span> <span class="pl-c1">RandomGif</span><span class="pl-k">.</span>init rightTopic
+  <span class="pl-k">in</span>
+    ( <span class="pl-c1">Model</span> left right
+    , <span class="pl-c1">Effects</span><span class="pl-k">.</span>batch
+        [ <span class="pl-c1">Effects</span><span class="pl-k">.</span>map <span class="pl-c1">Left</span> leftFx
+        , <span class="pl-c1">Effects</span><span class="pl-k">.</span>map <span class="pl-c1">Right</span> rightFx
+        ]
+    )
+
+<span class="pl-c">-- Effects.batch : List (Effects a) -&gt; Effects a</span></pre></div>
+
+<p>In this case we not only use <code>Effects.map</code> to tag results appropriately, we also use the <a href="http://package.elm-lang.org/packages/evancz/elm-effects/latest/Effects#batch"><code>Effects.batch</code></a> function to lump them all together. All of the requested tasks will get spawned off and run independently, so the left and right effects will be in progress at the same time.</p>
+
+<h2>
+<a id="example-7-list-of-random-gif-viewers" class="anchor" href="#example-7-list-of-random-gif-viewers" aria-hidden="true"><span class="octicon octicon-link"></span></a>Example 7: List of random GIF viewers</h2>
+
+<blockquote>
+<p><a href="https://evancz.github.io/elm-architecture-tutorial/examples/7">demo</a> / <a href="examples/7/">run locally</a></p>
+</blockquote>
+
+<p>This example lets you have a list of random GIF viewers where you can create the topics yourself. Again, we reuse the core <code>RandomGif</code> module exactly as is.</p>
+
+<p>When you look through <a href="examples/7/RandomGifList.elm">the implementation</a> you will see that it exactly corresponds to example 3. We put all of our submodels in a list associated with an ID and do our operatons based on those IDs. The only thing new is that we are using <code>Effects</code> in the <code>init</code> and <code>update</code> function, putting them together with <code>Effects.map</code> and <code>Effects.batch</code>.</p>
+
+<p>Please open an issue if this section should go into more detail about how things work!</p>
+
+<h2>
+<a id="example-8-animation" class="anchor" href="#example-8-animation" aria-hidden="true"><span class="octicon octicon-link"></span></a>Example 8: Animation</h2>
+
+<blockquote>
+<p><a href="https://evancz.github.io/elm-architecture-tutorial/examples/8">demo</a> / <a href="examples/8/">run locally</a></p>
+</blockquote>
+
+<p>Now we have seen components with tasks that can be nested in arbitrary ways, but how does it work for animation?</p>
+
+<p>Interestingly, it is pretty much exactly the same! (Or perhaps it is no longer surprising that the same pattern as in all the other examples works here too... Seems like a pretty good pattern!)</p>
+
+<p>This example is a pair of clickable squares. When you click a square, it rotates 90 degrees. Overall the code is an adapted form of example 2 and example 6 where we keep all the logic for animation lives in <code>SpinSquare.elm</code> which we then reuse multiple times in <code>SpinSquarePair.elm</code>. </p>
+
+<p>So all the new and interesting stuff is happening <a href="examples/8/SpinSquare.elm">in <code>SpinSquare</code></a>, so we are going to focus on that code. The first thing we need is a model:</p>
+
+<div class="highlight highlight-elm"><pre><span class="pl-k">type alias </span><span class="pl-c1">Model</span> <span class="pl-k">=</span>
+    { angle <span class="pl-k">:</span> <span class="pl-c1">Float</span>
+    , animationState <span class="pl-k">:</span> <span class="pl-c1">AnimationState</span>
+    }
+
+
+<span class="pl-k">type alias </span><span class="pl-c1">AnimationState</span> <span class="pl-k">=</span>
+    <span class="pl-c1">Maybe</span> { prevClockTime <span class="pl-k">:</span> <span class="pl-c1">Time</span>,  elapsedTime<span class="pl-k">:</span> <span class="pl-c1">Time</span> }
+
+
+<span class="pl-en">rotateStep </span><span class="pl-k">=</span> <span class="pl-c1">90</span>
+<span class="pl-en">duration </span><span class="pl-k">=</span> second</pre></div>
+
+<p>So our core model is the <code>angle</code> that the square is currently at and then some <code>animationState</code> to track what is going on with any ongoing animation. If there is no animation it is <code>Nothing</code>, but if something is happening it holds:</p>
+
+<ul>
+<li>
+<code>prevClockTime</code> — The most recent clock time which we will use for calculating time diffs. It will help us know exactly how many milliseconds have passed since last frame.</li>
+<li>
+<code>elapsedTime</code> — A number between 0 and <code>duration</code> that tells us how far we are in the animation.</li>
+</ul>
+
+<p>The <code>rotateStep</code> constant is just declaring how far it turns on each click. You can mess with that and everything should keep working.</p>
+
+<p>Now the interesting stuff all happens in <code>update</code>:</p>
+
+<div class="highlight highlight-elm"><pre><span class="pl-k">type </span><span class="pl-c1">Action</span>
+    <span class="pl-k">=</span> <span class="pl-c1">Spin</span>
+    <span class="pl-k">|</span> <span class="pl-c1">Tick</span> <span class="pl-c1">Time</span>
+
+
+<span class="pl-en">update</span> <span class="pl-k">:</span> <span class="pl-k">Action</span> <span class="pl-k">-&gt;</span> <span class="pl-k">Model</span> <span class="pl-k">-&gt;</span> (<span class="pl-k">Model</span>, <span class="pl-k">Effects</span> <span class="pl-k">Action</span>)
+<span class="pl-en">update </span>msg model <span class="pl-k">=</span>
+  <span class="pl-k">case </span>msg <span class="pl-k">of</span>
+    <span class="pl-c1">Spin</span> <span class="pl-k">-&gt;</span>
+      <span class="pl-k">case </span>model<span class="pl-k">.</span>animationState <span class="pl-k">of</span>
+        <span class="pl-c1">Nothing</span> <span class="pl-k">-&gt;</span>
+          ( model, <span class="pl-c1">Effects</span><span class="pl-k">.</span>tick <span class="pl-c1">Tick</span> )
+
+        <span class="pl-c1">Just</span> _ <span class="pl-k">-&gt;</span>
+          ( model, <span class="pl-c1">Effects</span><span class="pl-k">.</span>none )
+
+    <span class="pl-c1">Tick</span> clockTime <span class="pl-k">-&gt;</span>
+      <span class="pl-k">let</span>
+        newElapsedTime <span class="pl-k">=</span>
+          <span class="pl-k">case </span>model<span class="pl-k">.</span>animationState <span class="pl-k">of</span>
+            <span class="pl-c1">Nothing</span> <span class="pl-k">-&gt;</span>
+              <span class="pl-c1">0</span>
+
+            <span class="pl-c1">Just</span> {elapsedTime, prevClockTime} <span class="pl-k">-&gt;</span>
+              elapsedTime <span class="pl-k">+</span> (clockTime <span class="pl-k">-</span> prevClockTime)
+      <span class="pl-k">in</span>
+        <span class="pl-k">if </span>newElapsedTime <span class="pl-k">&gt;</span> duration <span class="pl-k">then</span>
+          ( { angle <span class="pl-k">=</span> model<span class="pl-k">.</span>angle <span class="pl-k">+</span> rotateStep
+            , animationState <span class="pl-k">=</span> <span class="pl-c1">Nothing</span>
+            }
+          , <span class="pl-c1">Effects</span><span class="pl-k">.</span>none
+          )
+        <span class="pl-k">else</span>
+          ( { angle <span class="pl-k">=</span> model<span class="pl-k">.</span>angle
+            , animationState <span class="pl-k">=</span> <span class="pl-c1">Just</span> { elapsedTime <span class="pl-k">=</span> newElapsedTime, prevClockTime <span class="pl-k">=</span> clockTime }
+            }
+          , <span class="pl-c1">Effects</span><span class="pl-k">.</span>tick <span class="pl-c1">Tick</span>
+          )</pre></div>
+
+<p>There are two kinds of <code>Action</code> we need to handle:</p>
+
+<ul>
+<li>
+<code>Spin</code> indicates that a user clicked the shape, requesting a spin. So in the <code>update</code> function, we request a clock tick if there is no animation going and just let things stay as is if one is already going.</li>
+<li>
+<code>Tick</code> indicates that we have gotten a clock tick so we need to take an animation step. In the <code>update</code> function this means we need to update our <code>animationState</code>. So first we check if there is an animation in progress. If so, we just figure out what the <code>newCount</code> is by taking the current <code>count</code> and adding a time diff to it. If the count is greater than 1000 we stop animating and stop requesting new clock ticks. Otherwise we update the animation state and request another clock tick.</li>
+</ul>
+
+<p>Again, I think we can cut this code down as we write more code like this and start seeing the general pattern. Should be exciting to find!</p>
+
+<p>Finally we have a somewhat interesting <code>view</code> function! This example gets a nice bouncy animation, but we are just incrementing our <code>elapsedTime</code> in linear chunks. How is that happening?</p>
+
+<p>The <code>view</code> code itself is totally standard <a href="http://package.elm-lang.org/packages/evancz/elm-svg/latest/"><code>elm-svg</code></a> to make some fancier clickable shapes. The cool part of the view code is <code>toOffset</code> which calculates the rotation offset for the current <code>AnimationState</code>.</p>
+
+<div class="highlight highlight-elm"><pre><span class="pl-c">-- import Easing exposing (ease, easeOutBounce, float)</span>
+
+<span class="pl-en">toOffset</span> <span class="pl-k">:</span> <span class="pl-k">AnimationState</span> <span class="pl-k">-&gt;</span> <span class="pl-k">Float</span>
+<span class="pl-en">toOffset </span>animationState <span class="pl-k">=</span>
+  <span class="pl-k">case </span>animationState <span class="pl-k">of</span>
+    <span class="pl-c1">Nothing</span> <span class="pl-k">-&gt;</span>
+      <span class="pl-c1">0</span>
+
+    <span class="pl-c1">Just</span> {elapsedTime} <span class="pl-k">-&gt;</span>
+      ease easeOutBounce float <span class="pl-c1">0</span> rotateStep duration elapsedTime</pre></div>
+
+<p>We are using the <a href="https://github.com/Dandandan">@Dandandan</a>’s <a href="http://package.elm-lang.org/packages/Dandandan/Easing/latest">easing package</a> which makes it to do <a href="http://easings.net/">all sorts of cool easings</a> on numbers, colors, points, and any other crazy thing you want.</p>
+
+<p>So the <code>ease</code> function is taking a number between 0 and <code>duration</code>. It then turns that into a number between 0 and <code>rotateStep</code> which we set to 90 degrees up at the top of our program. You also provide an easing. In our case we gave <code>easeOutBounce</code> which means as we slide from 0 to <code>duration</code>, we will get a number between 0 and 90 with that easing added. Pretty crazy! Try swapping <code>easeOutBounce</code> out for <a href="http://package.elm-lang.org/packages/Dandandan/Easing/latest/Easing">other easings</a> and see how it looks!</p>
+
+<p>From here, we wire everything together in <code>SpinSquarePair</code>, but that code is pretty much exactly the same as in example 2 and example 6.</p>
+
+<p>Okay, so that is the basics of doing animation with this library! It is not clear if we nailed everything here, so let us know how things go as you get more experience. Hopefully we can make it even easier!</p>
+
+<blockquote>
+<p><strong>Note:</strong> I expect we can build some abstractions on top of the core ideas here. This example does some lower level stuff, but I bet we can find some nice patterns to make this easier as we work with it more. If you find it weird now, try to make something better and tell us about it!</p>
+</blockquote>
+
+      <footer class="site-footer">
+        <span class="site-footer-owner"><a href="https://github.com/evancz/elm-architecture-tutorial">The Elm Architecture</a> is maintained by <a href="https://github.com/evancz">evancz</a>.</span>
+
+        <span class="site-footer-credits">This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the <a href="https://github.com/jasonlong/cayman-theme">Cayman theme</a> by <a href="https://twitter.com/jasonlong">Jason Long</a>.</span>
+      </footer>
+
+    </section>
+
+  
+  </body>
+</html>
