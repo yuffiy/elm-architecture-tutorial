@@ -1,5 +1,7 @@
 # The Elm Architecture
 
+Elm 指南
+
 This tutorial outlines “The Elm Architecture” which you will see in all [Elm][] programs, from [TodoMVC][] and [dreamwriter][] to the code running in production at [NoRedInk][] and [CircuitHub][]. The basic pattern is useful whether you are writing your front-end in Elm or JS or whatever else.
 
 [Elm]: http://elm-lang.org/
@@ -28,15 +30,23 @@ One very interesting aspect of the architecture in all these programs is that it
 
 ## The Basic Pattern
 
+基本模式
+
 The logic of every Elm program will break up into three cleanly separated parts:
 
-  * model
+每个Elm程序可以分解为三个独立部分
+
+  * model 
   * update
   * view
 
 You can pretty reliably start with the following skeleton and then iteratively fill in details for your particular case.
 
+你可以从下面的基本逻辑开始，反复应用他们直到掌握。
+
 > If you are new to reading Elm code, check out the [language docs](http://elm-lang.org/docs) which covers everything from syntax to getting into a “functional mindset”. The first two sections of [the complete guide](http://elm-lang.org/docs#complete-guide) will get you up to speed!
+
+如果你首次接触Elm代码，[language docs](http://elm-lang.org/docs)文档涵盖了从语法到函数式风格的指南。指南的前两节会让你快速掌握！
 
 ```elm
 -- MODEL
@@ -64,6 +74,7 @@ view =
 
 This tutorial is all about this pattern and small variations and extensions.
 
+本教程围绕这个模式进行小规模的扩展。
 
 ## Example 1: A Counter
 
