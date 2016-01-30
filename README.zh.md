@@ -136,25 +136,22 @@ main =
 
 `Address`是连接程序的一个关键概念。我们`view`中的每个事件都会抛出一个特定的address。address只用来发送数据。`StartApp`库监控来自的address的信息，并将他们反馈到`update`函数。这时`model`就会更新，[elm-html][]会将变化进行有效的渲染。
 
-This means values flow through an Elm program in only one direction, something like this:
 
-这意味值在着Elm程序中的流动是单向的，像下面这样：
+这意味着在Elm中数据流动是单向的，像下面这样：
 
 ![Signal Graph Summary](diagrams/signal-graph-summary-zh.png)
 
-蓝色部分就是Elm的核心程序，也就是我们一直在讨论的model/update/view模式。Elm编程中，多想想这个蓝色盒子，就可以取得很大进步。
+蓝色部分就是Elm的核心内容，也就是我们一直在讨论的model/update/view模式。多想想这个蓝色盒子，就可以在Elm实践中取得很大进步。
 
-Notice we are not *performing* actions as they get sent back to our app. We are simply sending some data over. This separation is a key detail, keeping our logic totally separate from our view code.
-
-注意我们并没有**执行** actions，因为他们被发送回我们的程序。我们仅仅发送了一些数据。这种分离是一个关键细节，他保持我们的逻辑完全独立于view代码。
+注意这里我们并没有**执行** actions，因为他们被发送回我们的程序。我们仅仅发送了一些数据。这种分离实现是一个关键细节，他保持我们的逻辑完全独立于view。
 
 ## 实例 2: 一对计数器
 
-**[demo](http://evancz.github.io/elm-architecture-tutorial/examples/2.html) / [see code](examples/2/)**
+**[示例地址](http://evancz.github.io/elm-architecture-tutorial/examples/2.html) / [代码地址](examples/2/)**
 
-In example 1 we created a basic counter, but how does that pattern scale when we want *two* counters? Can we keep things modular?
+在示例1中我们创建了一个基本的计数器。当我们需要*两个*计数器时，该如何进行扩展？能做到模块化么开发么？
 
-Wouldn't it be great if we could reuse all the code from example 1? The crazy thing about the Elm Architecture is that **we can reuse code with absolutely no changes**. When we created the `Counter` module in example one, it encapsulated all the implementation details so we can use them elsewhere:
+如果能重复使用示例1,岂不是很好？Elm架构极好的一点是，**可以重用代码而无需考虑其他变化**。示例1创建一个`Counter`模块，他封装了所有的细节实现，所以我们可以在别的地方使用：
 
 ```elm
 module Counter (Model, init, Action, update, view) where
@@ -170,9 +167,9 @@ update : Action -> Model -> Model
 view : Signal.Address Action -> Model -> Html
 ```
 
-Creating modular code is all about creating strong abstractions. We want boundaries which appropriately expose functionality and hide implementation. From outside of the `Counter` module, we just see a basic set of values: `Model`, `init`, `Action`, `update`, and `view`. We do not care at all how these things are implemented. In fact, it is *impossible* to know how these things are implemented. This means no one can rely on implementation details that were not made public.
+模块化代码是一个强大的抽象。我们希望通过模块系统适当的暴露功能或隐藏其部分实现。除了`Counter`模块本身，我们只能看到基本的`Model`，`init`，`Action`，`update`和`view`。我们并不需要去关心他们内部是如何实现的。实际上，依赖于私有的实现细节是*不可能*的。
 
-So we can reuse our `Counter` module, but now we need to use it to create our `CounterPair`. As always, we start with a `Model`:
+所以可以重复利用`Counter`模块，现在我们需要用他来构建我们的`CounterPair`。一如既往，从`Model`开始：
 
 ```elm
 type alias Model =
@@ -187,9 +184,9 @@ init top bottom =
     }
 ```
 
-Our `Model` is a record with two fields, one for each of the counters we would like to show on screen. This fully describes all of the application state. We also have an `init` function to create a new `Model` whenever we want.
+`Model`是一个含有两个字段的记录，用于将每个计数器显示在屏幕上。这充分说明了所有应用程序的状态。我们也有一个`init`函数用来创建我们新的`Model`。
 
-Next we describe the set of `Actions` we would like to support. This time our features should be: reset all counters, update the top counter, or update the bottom counter.
+接下来，描述我们想要实现的`Actions`。这回功能应该是：重置所有计数器，更新上边的计数器，或更新下边的计数器三个。
 
 ```elm
 type Action
@@ -198,7 +195,7 @@ type Action
     | Bottom Counter.Action
 ```
 
-Notice that our [union type][] refers to the `Counter.Action` type, but we do not know the particulars of those actions. When we create our `update` function, we are mainly routing these `Counter.Actions` to the right place:
+注意，这里的[类型]()是`Counter.Action`类型，但是我们并不知道他的的实现细节。创建`update`函数时，只需要实现将这些`Counter.Actions`发往正确的位置：
 
 ```elm
 update : Action -> Model -> Model
@@ -217,7 +214,7 @@ update action model =
       }
 ```
 
-So now the final thing to do is create a `view` function that shows both of our counters on screen along with a reset button.
+现在要做的最后一件事就是创建一个`view`函数，用来在屏幕上显示我们的计数器和一个重置按钮。
 
 ```elm
 view : Signal.Address Action -> Model -> Html
@@ -229,14 +226,13 @@ view address model =
     ]
 ```
 
-Notice that we are able to reuse the `Counter.view` function for both of our counters. For each counter we create a forwarding address. Essentially what we are doing here is saying, &ldquo;these counters will tag all outgoing messages with `Top` or `Bottom` so we can tell the difference.&rdquo;
+注意这里我们可以重复利用`Counter.view`函数来创建每个计数器。对于每个计数器，会创建一个address。逻辑可以翻译为，”这些计数器将发送`Top`或是`Bottom`的消息，以便于我们区分他。“
 
-That is the whole thing. The cool thing is that we can keep nesting more and more. We can take the `CounterPair` module, expose the key values and functions, and create a `CounterPairPair` or whatever it is we need.
+这就是全部代码。酷的是，我们可以嵌套很多很多个。我们可以将`CounterPair`模块导出关键的值和函数，创建一个`CounterPairPair`或做一些其他需要的。
 
+## 实例 3: 一个计数器的动态列表
 
-## Example 3: A Dynamic List of Counters
-
-**[demo](http://evancz.github.io/elm-architecture-tutorial/examples/3.html) / [see code](examples/3/)**
+**[示例地址](http://evancz.github.io/elm-architecture-tutorial/examples/3.html) / [代码地址](examples/3/)**
 
 A pair of counters is cool, but what about a list of counters where we can add and remove counters as we see fit? Can this pattern work for that too?
 
