@@ -19,8 +19,6 @@ Elm架构是一个无限嵌套组件的简单模式。对于模块化开发，�
   7. [GIF获取器列表](http://evancz.github.io/elm-architecture-tutorial/examples/7.html)
   8. [正方形的两个动画](http://evancz.github.io/elm-architecture-tutorial/examples/8.html)
 
-This tutorial will really help! It will bring out the concepts and ideas necessary to get to make examples 7 and 8 super easy. Investing in the foundation will be worth it!
-
 这个教程真的很有用，他将带给我们必要的概念和思路，这使得实例7和8的实现非常容易（7，8也是最难的两个例子，分别对应了处理异步和动画的方法）。投资是值得的。
 
 所有这些程序中一个非常有趣的地方是，Elm的实现非常自然。无论你是否读过这篇文档和知道他的好处，语言设计本身就会引导你深入这一架构。事实上，我已被Elm实现这种模式的简单和威力所深深震撼。
@@ -29,17 +27,13 @@ This tutorial will really help! It will bring out the concepts and ideas necessa
 
 ## 基本模式
 
-The logic of every Elm program will break up into three cleanly separated parts:
-
 每个Elm程序可以明确分解为三个部分：
 
   * model （模型）
   * update （更新器）
   * view （视图）
 
-You can pretty reliably start with the following skeleton and then iteratively fill in details for your particular case.
-
-你可以从下面基本形式开始，为你的逻辑的每部分填加实现代码。
+你可以从下面基本形式开始，为你的对应部分填加代码。
 
 > 如果你是第一次接触Elm代码，[language docs](http://elm-lang.org/docs)这篇文档涵盖了从语法到函数式编程风格的指南。完成阅读指南的前两节就可以快速掌握它！
 
@@ -75,17 +69,13 @@ view =
 
 我们的第一个例子是一个简单的计数器，他可以递增或递减。
 
-[代码](examples/1/Counter.elm) starts with a very simple model. We just need to keep track of a single number:
-
-代码开始与一个非常简单的model。我们只需要一个跟踪数字：
+[代码](examples/1/Counter.elm)开始于一个非常简单的model。我们只需要计算一个数字：
 
 ```elm
 type alias Model = Int
 ```
 
-When it comes to updating our model, things are relatively simple again. We define a set of actions that can be performed, and an `update` function to actually perform those actions:
-
-当涉及到更新我们的model时，事情就比较简单了。我们定义了一组action操作，和一个`update`函数来执行这些action：
+当涉及到更新我们的model时，比较简单了。我们定义了一组可执行的actions，和一个`update`函数来执行这些actions：
 
 ```elm
 type Action = Increment | Decrement
@@ -97,13 +87,11 @@ update action model =
     Decrement -> model - 1
 ```
 
-Notice that our `Action` [union type][] does not *do* anything. It simply describes the actions that are possible. If someone decides our counter should be doubled when a certain button is pressed, that will be a new case in `Action`. This means our code ends up very clear about how our model can be transformed. Anyone reading this code will immediately know what is allowed and what is not. Furthermore, they will know exactly how to add new features in a consistent way.
+注意我们的`Action`[类型]()，他没有**做**其他任何事。他只是简单的描述了action操作（Increment和Decrement分别表示递增和递减）。如果某人想要在按下按钮时，让我们的计数器以双倍计数，那么这又会是一个新的`Action`。代码很清楚的描述了model是如何转变的。任何人阅读这段代码后都会马上知道他会做什么，他能做什么。此外，也将知道添加新功能的方式。
 
+[类型]: http://elm-lang.org/learn/Union-Types.elm
 
-
-[union type]: http://elm-lang.org/learn/Union-Types.elm
-
-Finally, we create a way to `view` our `Model`. We are using [elm-html][] to create some HTML to show in a browser. We will create a div that contains: a decrement button, a div showing the current count, and an increment button.
+最后，我们创建一个`view`方法用来展示我们的`Model`。并使用[elm-html]()在浏览器中显示HTML。我们创建一个div容器，他包括一个递增按钮，一个div用来显示当前的值，和一个递减按钮。
 
 [elm-html]: http://elm-lang.org/blog/Blazing-Fast-Html.elm
 
@@ -121,14 +109,20 @@ countStyle =
   ...
 ```
 
-The tricky thing about our `view` function is the `Address`. We will dive into that in the next section! For now, I just want you to notice that **this code is entirely declarative**. We take in a `Model` and produce some `Html`. That is it. At no point do we mutate the DOM manually, which gives the library [much more freedom to make clever optimizations][elm-html] and actually makes rendering *faster* overall. It is crazy. Furthermore, `view` is a plain old function so we can get the full power of Elm&rsquo;s module system, test frameworks, and libraries when creating views.
+The tricky thing about our `view` function is the `Address`. We will dive into that in the next section! For now, I just want you to notice that **this code is entirely declarative**. We take in a `Model` and produce some `Html`. That is it. 
 
-This pattern is the essence of architecting Elm programs. Every example we see from now on will be a slight variation on this basic pattern: `Model`, `update`, `view`.
+At no point do we mutate the DOM manually, which gives the library [much more freedom to make clever optimizations][elm-html] and actually makes rendering *faster* overall. 
+
+It is crazy. Furthermore, `view` is a plain old function so we can get the full power of Elm&rsquo;s module system, test frameworks, and libraries when creating views.
+
+`Address`是`view`中不好理解的一个概念，我们将在下一节中深入讨论他！现在我只想让你知道，**这段代码完全是声明式的**。一个`Model`会对应产生一些`Html`。总的来说，任何时候我们手动修改dom，这给了库更大的自由度去实现优化，渲染也会**更快**。此外，视图是一个纯函数，所以我们可以得到一个强大的模块系统，测试框架和一些库，当创建一个views时。
+
+这个模式是构建Elm程序的本质。从现在开始，我们看到每个实例都是围绕`Model`，`update`,`view`对基本模式的扩展。
 
 
-## Starting the Program
+## 启动程序
 
-Pretty much all Elm programs will have a small bit of code that drives the whole application. For each example in this tutorial, that code is broken out into `Main.elm`. For our counter example, the interesting code looks like this:
+很多Elm程序都有一小段代码来启动整个应用程序。本指南中的实例中，主要代码会被放在一个叫做`Main.elm`的文件中。拿我们计数器来说，这段代码看起来像下面这样：
 
 ```elm
 import Counter exposing (update, view)
@@ -138,20 +132,23 @@ main =
   start { model = 0, update = update, view = view }
 ```
 
-We are using the [`StartApp`](https://github.com/evancz/start-app) package to wire together our initial model with the update and view functions. It is a small wrapper around Elm's [signals](http://elm-lang.org/learn/Using-Signals.elm) so that you do not need to dive into that concept yet.
+我们使用[`StartApp`](https://github.com/evancz/start-app)库来将model，update和view函数组织在一起。这个库是对[signals](http://elm-lang.org/learn/Using-Signals.elm)库的简单包装，所以你不必对他深入理解。
 
-The key to wiring up your application is the concept of an `Address`. Every event handler in our `view` function reports to a particular address. It just sends chunks of data along. The `StartApp` package monitors all the messages coming in to this address and feeds them into the `update` function. The model gets updated and [elm-html][] takes care of rendering the changes efficiently.
+`Address`是连接程序的一个关键概念。我们`view`中的每个事件都会抛出一个特定的address。address只用来发送数据。`StartApp`库监控来自的address的信息，并将他们反馈到`update`函数。这时`model`就会更新，[elm-html][]会将变化进行有效的渲染。
 
 This means values flow through an Elm program in only one direction, something like this:
 
-![Signal Graph Summary](diagrams/signal-graph-summary.png)
+这意味值在着Elm程序中的流动是单向的，像下面这样：
 
-The blue part is our core Elm program which is exactly the model/update/view pattern we have been discussing so far. When programming in Elm, you can mostly think inside this box and make great progress.
+![Signal Graph Summary](diagrams/signal-graph-summary-zh.png)
+
+蓝色部分就是Elm的核心程序，也就是我们一直在讨论的model/update/view模式。Elm编程中，多想想这个蓝色盒子，就可以取得很大进步。
 
 Notice we are not *performing* actions as they get sent back to our app. We are simply sending some data over. This separation is a key detail, keeping our logic totally separate from our view code.
 
+注意我们并没有**执行** actions，因为他们被发送回我们的程序。我们仅仅发送了一些数据。这种分离是一个关键细节，他保持我们的逻辑完全独立于view代码。
 
-## Example 2: A Pair of Counters
+## 实例 2: 一对计数器
 
 **[demo](http://evancz.github.io/elm-architecture-tutorial/examples/2.html) / [see code](examples/2/)**
 
