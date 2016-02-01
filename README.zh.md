@@ -226,29 +226,23 @@ view address model =
     ]
 ```
 
-注意这里我们可以重复利用`Counter.view`函数来创建每个计数器。对于每个计数器，会创建一个address。逻辑可以翻译为，”这些计数器将发送`Top`或是`Bottom`的消息，以便于我们区分他。“
+注意这里我们可以重复利用`Counter.view`函数来创建每个计数器。对于每个计数器，会创建一个address。逻辑部分可以译为，”这些计数器将发送`Top`或是`Bottom`的消息，以便于我们区分他。“
 
-这就是全部代码。酷的是，我们可以嵌套很多很多个。我们可以将`CounterPair`模块导出关键的值和函数，创建一个`CounterPairPair`或做一些其他需要的。
+这就是全部代码。很酷的是，我们可以嵌套很多个。我们可以将`CounterPair`模块的值和函数导出，再创建一个`CounterPairPair`或做一些其他的什么。
 
 ## 实例 3: 一个动态的计数器列表
 
 **[示例地址](http://evancz.github.io/elm-architecture-tutorial/examples/3.html) / [代码地址](examples/3/)**
 
-A pair of counters is cool, but what about a list of counters where we can add and remove counters as we see fit? Can this pattern work for that too?
+一对计数器的例子很酷，但如果我们想给计数器做列表添加或移除，这个模式还适用么？
 
-一对计数器很酷，如果我们想给计数器列表添加或删除计数器，这个模式还适用么？
-
-Again we can reuse the `Counter` module exactly as it was in example 1 and 2!
-
-我们可以完全再次重复使用`Counter`模块，就像实例1和实例2！
+我们可以像实例1和实例2那样，再次利用`Counter`模块。
 
 ```elm
 module Counter (Model, init, Action, update, view)
 ```
 
-That means we can just get started on our `CounterList` module. As always, we begin with our `Model`:
-
-这意味着我们可以开始我们的`CounterList`模块，同样的，我们从`Model`开始：
+同样的，我们从`Model`开始构建我们的`CounterList`模块：
 
 ```elm
 type alias Model =
@@ -259,16 +253,11 @@ type alias Model =
 type alias ID = Int
 ```
 
-Now our model has a list of counters, each annotated with a unique ID. These IDs allow us to distinguish between them, so if we need to update counter number 4 we have a nice way to refer to it. (This ID also gives us something convenient to [`key`][key] on when we are thinking about optimizing rendering, but that is not the focus of this tutorial!) Our model also contains a
-`nextID` which helps us assign unique IDs to each counter as we add new ones.
-
-现在我们的model有一个计数器列表，每一个都有一个唯一ID。这些ID允许我们区分它们彼此，所以，如果我们需要update计数器的数量4，我们有一个很好的方式来引用他。（ID也给了我们一些方便的地方关于如何优化渲染，但这并不是本教程的种点！）我们的model也包括了一个`nextID`帮助我们分配唯一的id到每个新添加的计数器。
+现在我们的model包括一个计数器列表，且每个都有唯一ID。这些ID允许我们区分它们彼此，所以，如果我们需要更新4号计数器时，就有一个找到他的好办法。（ID也给可以帮助elm优化渲染，但这并不是本教程的重点）我们的model还有一个`nextID`，他帮助我们给每个新添加的计数器分配唯一id。
 
 [key]: http://package.elm-lang.org/packages/evancz/elm-html/latest/Html-Attributes#key
 
-Now we can define the set of `Actions` that can be performed on our model. We want to be able to add counters, remove counters, and update certain counters.
-
-现在我们可以定义一组用来操作model的`Actions`集合。我们希望能添加计数器，移除计数器，和更新某些计数器。
+现在我们来定义一组操作model的`Actions`集合。其功能是添加计数器，移除计数器，和更新某计数器。
 
 ```elm
 type Action
@@ -277,9 +266,7 @@ type Action
     | Modify ID Counter.Action
 ```
 
-Our `Action` [union type][] is shockingly close to the high-level description. Now we can define our `update` function.
-
-我们的`Action`类型非常接近于高级描述。现在我们可以定义我们的`update`函数。
+`Action`的类型非常接近定义的描述。现在我们可以开始定义`update`函数了。
 
 ```elm
 update : Action -> Model -> Model
@@ -306,28 +293,15 @@ update action model =
           { model | counters = List.map updateCounter model.counters }
 ```
 
-Here is a high-level description of each case:
-
-这是每个高级描述：
-
-  * `Insert` &mdash; First we create a new counter and put it at the end of
-    our counter list. Then we increment our `nextID` so that we have a fresh
-    ID next time around.
+每个定义描述如下：
 	
-  * `Insert` &mdash; 首先我们创建了一个新的计数器，把他放在列表的末端。然后我们给`nextID`递增，这样我们下次就有了一个新的ID。
+  * `Insert` &mdash; 首先我们创建了一个新的计数器，把他放在列表的末端。然后将`nextID`递增1，这样下次就有了一个新的ID。
 
-  * `Remove` &mdash; Drop the first member of our counter list.
-  
-  * `Remove` &mdash; 删除列表的第一个成员。
-
-  * `Modify` &mdash; Run through all of our counters. If we find one with
-    a matching ID, we perform the given `Action` on that counter.
+  * `Remove` &mdash; 将移除列表的第一个计数器。
 	
-  * `Modify` &mdash; 遍历全部计数器，如果我们找到匹配的ID，就对他执行指定的`Action`。
+  * `Modify` &mdash; 遍历全部计数器，如果找到匹配ID的计数器，就对他执行给定的`Action`。
 
-All that is left to do now is to define the `view`.
-
-现在剩下的就是定义`view`。
+现在就剩下定义`view`了。
 
 ```elm
 view : Signal.Address Action -> Model -> Html
@@ -343,22 +317,15 @@ viewCounter address (id, model) =
   Counter.view (Signal.forwardTo address (Modify id)) model
 ```
 
-The fun part here is the `viewCounter` function. It uses the same old
-`Counter.view` function, but in this case we provide a forwarding address that annotates all messages with the ID of the particular counter that is getting rendered.
+有趣的是`viewCounter`函数。他和之前的`Counter.view`函数差不多，只不过这里我们给address传了counter特定的ID。
 
-有趣的部分是`viewCounter`函数。他和之前的`Counter.view`函数很像，但是这里我们提供了一个ID和特定counter元组的address。
+在创建`view`函数时，我们用`viewCounter`函数作用于每个计数器，同时还创建了增加和移除按钮，并给他们对应`address`。
 
-When we create the actual `view` function, we map `viewCounter` over all of our counters and create add and remove buttons that report to the `address` directly.
+当创建不定数量的子组件时，使用ID这个技巧很有用。计数器虽然很简单，当假如你有一个用户配置文件列表或新闻或是产品信息列表时，这个模式也同样适用。
 
-当我们创建真正的`view`函数，我们map`viewCounter`每个计数器，创建对应address的增加和删除按钮。
+## 实例 4: 一个增强功能的计数器列表
 
-This ID trick can be used any time you want a dynamic number of subcomponents. Counters are very simple, but the pattern would work exactly the same if you had a list of user profiles or tweets or newsfeed items or product details.
-
-这个ID技巧可以用很多次当你想创建不定数量的子组件时。计数器非常简单，但是这个模式做完全相同的工作如果你有一个用户配置列表或新闻或产品的详细信息。
-
-## Example 4: A Fancier List of Counters
-
-**[demo](http://evancz.github.io/elm-architecture-tutorial/examples/4.html) / [see code](examples/4/)**
+**[示例地址](http://evancz.github.io/elm-architecture-tutorial/examples/4.html) / [代码地址](examples/4/)**
 
 Okay, keeping things simple and modular on a dynamic list of counters is pretty cool, but instead of a general remove button, what if each counter had its own specific remove button? Surely *that* will mess things up!
 
