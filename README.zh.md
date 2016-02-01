@@ -1,6 +1,6 @@
 # Elm 架构
 
-这个教程是”Elm架构”概述。你会看到所有[Elm]()程序，从[TodoMVC]()，[dreamwriter]()，还是在[NoRedInk]()和[CircuitHub]()等产品中运行的程序都能找得到。这个基本模式在写前端程序时很有用，无论是Elm或js或其他地方。
+这个教程是”Elm架构”概述。你会看到所有[Elm]()程序，不管是[TodoMVC]()，[dreamwriter]()，还是在[NoRedInk]()和[CircuitHub]()等产品中运行的程序都能找得到。这个基本模式在写前端程序时十分有用，无论是用Elm或js或是其他。
 
 [Elm]: http://elm-lang.org/
 [TodoMVC]: https://github.com/evancz/elm-todomvc
@@ -8,34 +8,34 @@
 [NoRedInk]: https://www.noredink.com/
 [CircuitHub]: https://www.circuithub.com/
 
-Elm架构是一个无限嵌套组件的简单模式。对于模块化开发，代码重构，测试都有重大意义。最终，这个模式使得创建模块化复杂的web应用变的简单。我们将通过8个示例，慢慢理解该模式与其核心原则：
+Elm架构是一个无限嵌套组件的简单模式。对于模块化开发，代码重构，测试都有着重大意义。最终，这个模式使创建模块化复杂的web应用变的很简单。我们将通过8个实例，深入理解该模式与其核心原则：
 
   1. [计数器](http://evancz.github.io/elm-architecture-tutorial/examples/1.html)
-  2. [两个计数器](http://evancz.github.io/elm-architecture-tutorial/examples/2.html)
+  2. [一对计数器](http://evancz.github.io/elm-architecture-tutorial/examples/2.html)
   3. [计数器列表](http://evancz.github.io/elm-architecture-tutorial/examples/3.html)
   4. [计数器列表（改）](http://evancz.github.io/elm-architecture-tutorial/examples/4.html)
   5. [GIF获取器](http://evancz.github.io/elm-architecture-tutorial/examples/5.html)
-  6. [两个GIF获取器](http://evancz.github.io/elm-architecture-tutorial/examples/6.html)
+  6. [一对GIF获取器](http://evancz.github.io/elm-architecture-tutorial/examples/6.html)
   7. [GIF获取器列表](http://evancz.github.io/elm-architecture-tutorial/examples/7.html)
-  8. [正方形的两个动画](http://evancz.github.io/elm-architecture-tutorial/examples/8.html)
+  8. [两个正方形动画](http://evancz.github.io/elm-architecture-tutorial/examples/8.html)
 
-这个教程真的很有用，他将带给我们必要的概念和思路，这使得实例7和8的实现非常容易（7，8也是最难的两个例子，分别对应了处理异步和动画的方法）。投资是值得的。
+这个教程非常有用，他将带给我们必要的概念和思路，这使得实例7和实例8的实现变的简单（7，8是较难掌握的两个例子，分别对应了处理异步请求Async和动画效果Animation的方法论）。投资肯定是值得的。
 
-所有这些程序中一个非常有趣的地方是，Elm的实现非常自然。无论你是否读过这篇文档和知道他的好处，语言设计本身就会引导你深入这一架构。事实上，我已被Elm实现这种模式的简单和威力所深深震撼。
+所有这些程序中一个非常有趣的地方是，Elm的实现方式非常自然。无论你是否读过这篇文档和知道他特点，语言设计本身就会引领你深入这一架构。事实上，我已被Elm对这种模式实现简单性与威力所深深震撼。
 
-**注意**：跟随本指南的代码，[安装Elm](http://elm-lang.org/install)和fork这个项目。本指南的每个示例都给出了要如何运行代码。
+**注意**：想要查看本指南的源代码，要[安装Elm](http://elm-lang.org/install)和fork这个项目。**examples**中的每个实例都告诉了你要如何运行代码。
 
 ## 基本模式
 
 每个Elm程序可以明确分解为三个部分：
 
   * model （模型）
-  * update （更新器）
+  * update （动作）
   * view （视图）
 
-你可以从下面基本形式开始，为你的对应部分填加代码。
+你可以从下面基本形式开始，为每部分扩展代码。
 
-> 如果你是第一次接触Elm代码，[language docs](http://elm-lang.org/docs)这篇文档涵盖了从语法到函数式编程风格的指南。完成阅读指南的前两节就可以快速掌握它！
+> 如果第一次接触Elm代码，[language docs](http://elm-lang.org/docs)这篇文档涵盖了从语法到函数式编程风格的指南，完成阅读指南的前两节就可以快速掌握它！
 
 ```elm
 -- MODEL
@@ -61,7 +61,7 @@ view =
   ...
 ```
 
-本教程全程都在讲解这个模式的详细用法，并在上面进行小规模的扩展。
+本教程全程都在讲解这个模式的详尽用法，并在上面形式上逐步的扩展代码。
 
 ## 实例1：计数器
 
@@ -327,17 +327,11 @@ viewCounter address (id, model) =
 
 **[示例地址](http://evancz.github.io/elm-architecture-tutorial/examples/4.html) / [代码地址](examples/4/)**
 
-Okay, keeping things simple and modular on a dynamic list of counters is pretty cool, but instead of a general remove button, what if each counter had its own specific remove button? Surely *that* will mess things up!
+很好，保持一个动态计数器列表的简单性和模块化非常的酷，但如果想要每个计数器都有自己的移除按钮，取代之前的移除按钮，这要怎么做？*事情*一定会变的一团糟。
 
-很好，保持一个动态的计数器列表简单和模块化非常酷，但是如果每个计数器都有自己的移除按钮来取代之前的移除按钮要怎么做？事情肯定会变的一团糟。
+很显然不是，他照样可以做的很好。
 
-Nah, it works.
-
-很显然不是，他照样可以工作。
-
-In this case our goals mean that we need a new way to view a `Counter` that adds a remove button. Interestingly, we can keep the `view` function from before and add a new `viewWithRemoveButton` function that provides a slightly different view of our underlying `Model`. This is pretty cool. We do not need to duplicate any code or do any crazy subtyping or overloading. We just add a new function to the public API to expose new functionality!
-
-这种情况下，我们需要一个新的方式来审阅每个`Counter`，增加一个移除按钮。有趣的是，我们能保持`vuew`函数前添加一个新的`viewWithRemoveButton`函数，这个新函数提供一个略显不同的view为我们的`Model`。这十分库。我们不需要去复制任何代码或做一些疯狂的子类型或重构。我们仅仅向公共API添加一个新函数来导出新功能。
+这种情况，我们需要一个全新的方式为每个`Counter`增加移除按钮。有趣的是，我们仍可以继续使用之前的`view`函数，只需添加一个与之前的view略有不同哦的`viewWithRemoveButton`函数。这非常酷，这样我们就不需要重复写很多代码，写一些子类性或疯狂的重构代码。仅仅向公共API添加一个新的函数导出新功能就可以了。
 
 ```elm
 module Counter (Model, init, Action, update, view, viewWithRemoveButton, Context) where
@@ -360,9 +354,7 @@ viewWithRemoveButton context model =
     ]
 ```
 
-The `viewWithRemoveButton` function adds one extra button. Notice that the increment/decrement buttons send messages to the `actions` address but the delete button sends messages to the `remove` address. The messages we send along to `remove` are essentially saying, &ldquo;hey, whoever owns me, remove me!&rdquo; It is up to whoever owns this particular counter to do the removing.
-
-`viewWithRemoveButton`函数添加一个额外的按钮。递增/递减按钮将消息发往`actions` address，但删除按钮将消息发往`remove` address。发往`remove`的消息像是再说“嘿，谁拥有我，谁移除我”；这是由拥有他的特定计数器移除的。
+`viewWithRemoveButton`函数添加一个额外的按钮。与递增/递减按钮把信息发往`actions`地址不同，移除按钮将消息发往了`remove`。只要特定计数器有移除按钮并发送`remove`消息，就可以移除他自己，这就像是在说：“嘿伙计，谁拥有我，谁就可以删除我！”
 
 Now that we have our new `viewWithRemoveButton`, we can create a `CounterList` module which puts all the individual counters together. The `Model` is the same as in example 3: a list of counters and a unique ID.
 
