@@ -331,7 +331,7 @@ viewCounter address (id, model) =
 
 很显然不是，他照样可以做的很好。
 
-这种情况，我们需要一个全新的方式为每个`Counter`增加移除按钮。有趣的是，我们仍可以继续使用之前的`view`函数，只需添加一个与之前的view略有不同哦的`viewWithRemoveButton`函数。这非常酷，这样我们就不需要重复写很多代码，写一些子类性或疯狂的重构代码。仅仅向公共API添加一个新的函数导出新功能就可以了。
+这种情况，我们需要一个全新的方式为每个`Counter`增加移除按钮。有趣的是，我们仍可以继续使用之前的`view`函数，只需添加一个与之前的view略有不同哦的`viewWithRemoveButton`函数。这非常酷，这样我们就不需要重复写很多代码，写一些子类性或疯狂的重构代码。仅仅向公共API添加一个新的函数并导出功能就可以了。
 
 ```elm
 module Counter (Model, init, Action, update, view, viewWithRemoveButton, Context) where
@@ -354,11 +354,11 @@ viewWithRemoveButton context model =
     ]
 ```
 
-`viewWithRemoveButton`函数添加一个额外的按钮。与递增/递减按钮把信息发往`actions`地址不同，移除按钮将消息发往了`remove`。只要特定计数器有移除按钮并发送`remove`消息，就可以移除他自己，这就像是在说：“嘿伙计，谁拥有我，谁就可以删除我！”
+`viewWithRemoveButton`函数添加了一个额外的按钮。与递增/递减按钮把信息发往`actions`地址不同，移除按钮将消息发往了`remove`。只要特定计数器有移除按钮并发送`remove`消息，就可以移除他自己，这就像是在说：“嘿伙计，谁拥有我，谁就可以删除我！”
 
 Now that we have our new `viewWithRemoveButton`, we can create a `CounterList` module which puts all the individual counters together. The `Model` is the same as in example 3: a list of counters and a unique ID.
 
-现在我们有了我们的新`viewWithRemoveButton`，我们可以创建一个`CounterList`模块，他用来将所有单个计算器放在一起。`Model`和实例3相同，一个计数器列表和一个唯一ID。
+现在我们有了新的`viewWithRemoveButton`函数，可以创建一个`CounterList`模块，用他把所有单个计算器合在一起。`Model`和实例3是一样的，包括一个计数器列表和一个唯一ID。
 
 ```elm
 type alias Model =
@@ -369,9 +369,7 @@ type alias Model =
 type alias ID = Int
 ```
 
-Our set of actions is a bit different. Instead of removing any old counter, we want to remove a specific one, so the `Remove` case now holds an ID.
-
-我们的actions集合有一点不同。我们要删除一个特定的计数器来取代删除旧的计数器，这样`Remove`应该持有一个ID。
+我们的actions有一点点不同。与旧的移除相比，`Remove`现在需要一个ID来移除特定的计数器。
 
 ```elm
 type Action
@@ -379,8 +377,6 @@ type Action
     | Remove ID
     | Modify ID Counter.Action
 ```
-
-The `update` function is pretty similar to example 3 as well.
 
 `update`函数和实例3十分像。
 
@@ -408,13 +404,9 @@ update action model =
           { model | counters = List.map updateCounter model.counters }
 ```
 
-In the case of `Remove`, we take out the counter that has the ID we are supposed to remove. Otherwise, the cases are quite close to how they were before.
+这里的`Remove`，去掉了对应ID的计数器。剩下的内容与之前一样。
 
-这里的`Remove`，我们去掉了ID相同的计数器。剩下的与之前十分接近。
-
-Finally, we put it all together in the `view`:
-
-完成，我们将他们一起放在`view`：
+搞定了，将他们一并放在`view`中：
 
 ```elm
 view : Signal.Address Action -> Model -> Html
@@ -435,22 +427,16 @@ viewCounter address (id, model) =
 
 In our `viewCounter` function, we construct the `Counter.Context` to pass in all the necessary forwarding addresses. In both cases we annotate each `Counter.Action` so that we know which counter to modify or remove.
 
-在我们的`viewCounter`函数，我们构造了`Counter.Countext`并传递了特定的address。这两种情况下，我们对每个`Counter.Action`进行标记，所以我们知道如何修改和删除某个计数器。
+在`viewCounter`函数中，我们构造出`Counter.Countext`来传递特定的转发地址。在这两种情况下，我们对每个`Counter.Action`进行了标记，有了ID，我们就知道要修改和删除哪个计数器。
 
 
-## Big Lessons So Far
+## 重大启示
 
-**Basic Pattern** &mdash; Everything is built around a `Model`, a way to `update` that model, and a way to `view` that model. Everything is a variation on this basic pattern.
+**基本模式** &mdash; 所有的一切都围绕`Model`构建，一个是`update` model，一个是`view` model。所有的一切都是这个基本模式的变形。
 
-**基本模式** &mdash; 所有的一切都围绕一个`Model`构建，一种是`update` model，一种是`view` model。所有的一切都是基本模式的变形。
+**嵌套模块** &mdash; 转发地址可以很容易的嵌套基本模式，完全隐藏了实现的细节。我们可以对这个模式任意深度的嵌套，而且每一级只需要知道他的下一级即可。
 
-**Nesting Modules** &mdash; Forwarding addresses makes it easy to nest our basic pattern, hiding implementation details entirely. We can nest this pattern arbitrarily deep, and each level only needs to know about what is going on one level lower.
-
-**嵌套模块** &mdash; Forwarding addresses 使得嵌套基本模式变的简单，完全隐藏实现细节。我们可以任意深度嵌套这个模式，而且每个级别只需要知道一个低级别的东西。
-
-**Adding Context** &mdash; Sometimes to `update` or `view` our model, extra information is needed. We can always add some `Context` to these functions and pass in all the additional information we need without complicating our `Model`.
-
-**增加上下文** &mdash; 有时`update`或`view`我们的model时，而外的信息是需要的。我们通常要增加一些上下文到每个函数，并通过在所有额外的信息，我们不需要复杂化我们的`Model`。
+**增加Context** &mdash; 有时在`update`或`view`model时，需要一些额外信息。通常我们要在这些函数上增加一些`Context`，并将这些信息附在上面，而并不需要复杂化我们的`Model`。
 
 ```elm
 update : Context -> Action -> Model -> Model
@@ -459,11 +445,9 @@ view : Context' -> Model -> Html
 
 At every level of nesting we can derive the specific `Context` needed for each submodule.
 
-在嵌套的每一级可以获取每个子模块所需的特定上下文。
+在嵌套的每一级可以获取每个子模块所需特定的`Context`。
 
-**Testing is Easy** &mdash; All of the functions we have created are [pure functions][pure]. That makes it extremely easy to test your `update` function. There is no special initialization or mocking or configuration step, you just call the function with the arguments you would like to test.
-
-**容易测试** &mdash; 我们创建的所有函数都是[纯函数](pure)。这使得测试`update`函数非常容易。没有特殊初始配置或mocking或配置步骤，你仅仅给他们参数调用这些函数来完成你想要的测试。
+**容易测试** &mdash; 我们创建的所有函数都是[纯函数](pure)。这使得`update`函数测试起来非常简单。不需要做什么特殊的初始或mocking或配置，仅仅给这些函数一些参数就可以完成你想要的测试。
 
 [pure]: http://en.wikipedia.org/wiki/Pure_function
 
