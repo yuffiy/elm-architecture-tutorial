@@ -728,11 +728,19 @@ Please open an issue if this section should go into more detail about how things
 
 Now we have seen components with tasks that can be nested in arbitrary ways, but how does it work for animation?
 
+现在我们已经看到了组件的任务，可以嵌套在任意的方式，但对于动画他是如何工作的？
+
 Interestingly, it is pretty much exactly the same! (Or perhaps it is no longer surprising that the same pattern as in all the other examples works here too... Seems like a pretty good pattern!)
+
+有趣的是，他完全是相同的！（或许也不再令人惊讶的是，在所有其他的例子中，同样的模式也在这里工作……似乎是一个很好的模式！）
 
 This example is a pair of clickable squares. When you click a square, it rotates 90 degrees. Overall the code is an adapted form of example 2 and example 6 where we keep all the logic for animation in `SpinSquare.elm` which we then reuse multiple times in `SpinSquarePair.elm`. 
 
+这个例子是一对可点击的正方形，当你单击方块，他旋转90度。总体来说，代码是实例2和实例6的一种适配，我们将动画的所有逻辑写在`SpinSquare.elm`，然后我们可以在`SpinSquarePair.elm`中使用多次。
+
 So all the new and interesting stuff is happening [in `SpinSquare`](examples/8/SpinSquare.elm), so we are going to focus on that code. The first thing we need is a model:
+
+所有新的和有趣的东西发生在[`SpinSquare`中](examples/8/SpinSquare.elm)，所以我们要关注代码。首先我们需要一个model：
 
 ```elm
 type alias Model =
@@ -750,13 +758,24 @@ duration = second
 ```
 
 So our core model is the `angle` that the square is currently at and then some `animationState` to track what is going on with any ongoing animation. If there is no animation it is `Nothing`, but if something is happening it holds:
+
+所以我们的核心model是方块当前的`angle`，然后`animationState`来监测正在进行中动画的状态。如果没有动画，他就是`Nothing`，但是如果有什么事发生了：
   
   * `prevClockTime` &mdash; The most recent clock time which we will use for calculating time diffs. It will help us know exactly how many milliseconds have passed since last frame.
+  
+  * `prevClockTime` &mdash; 最新的时间，我们用来计算时间差。这帮助我们精确知道离最后一帧已经过去多少毫秒。
+  
   * `elapsedTime` &mdash; A number between 0 and `duration` that tells us how far we are in the animation.
+  
+  * `elapsedTime` &mdash; 一个0与`duration`之间的数字，用来告诉我们动画持续了多久。
 
 The `rotateStep` constant is just declaring how far it turns on each click. You can mess with that and everything should keep working.
 
+`rotateStep`常数只是定义了每次点击转动的角度，你可以修改他，一切都应该继续工作。
+
 Now the interesting stuff all happens in `update`:
+
+现在有趣的东西发生在`update`函数：
 
 ```elm
 type Action
@@ -801,14 +820,27 @@ update msg model =
 
 There are two kinds of `Action` we need to handle:
 
+我们需要处理两种情况的`Action`：
+
   - `Spin` indicates that a user clicked the shape, requesting a spin. So in the `update` function, we request a clock tick if there is no animation going and just let things stay as is if one is already going.
+  
+  * `Spin`表示用户点击了方块，请求一个旋转。所以在`update`函数，我们请求一个时钟如果没有动画，仅仅让他保持不动如果正在动画中。
+  
   - `Tick` indicates that we have gotten a clock tick so we need to take an animation step. In the `update` function this means we need to update our `animationState`. So first we check if there is an animation in progress. If so, we just figure out what the `newElapsedTime` is by taking the current `elapsedTime` and adding a time diff to it. If the now elapsed time is greater than `duration` we stop animating and stop requesting new clock ticks. Otherwise we update the animation state and request another clock tick.
+  
+  * `Tick`表示我们得到一个时钟，所以我们需要采取一个动画步数。在`update`函数中，这意味着我们需要更新我们的`animationState`。所以首先我们检查了如果动画是否正在进行。如果是这样，我们计算出`newElapsedTime`与当前`elapsedTime`的差值。如果现在经过的时间大于持续时间，我们停止动画和停止请求新的时钟。其他情况我们根新动画状态和请求其他时钟。
 
 Again, I think we can cut this code down as we write more code like this and start seeing the general pattern. Should be exciting to find!
 
+再次，我们任务我们可以把整个代码写下来，因为我们写更多的代码，像这样，开始看到的一般模式。应该是令人兴奋的发现！
+
 Finally we have a somewhat interesting `view` function! This example gets a nice bouncy animation, but we are just incrementing our `elapsedTime` in linear chunks. How is that happening?
 
+最后，我们有一个有趣的`view`函数！这个例子中得到了漂亮的回弹动画，但是我们仅仅线性递增了`elapsedTime`，他是如何发生的？
+
 The `view` code itself is totally standard [`elm-svg`](http://package.elm-lang.org/packages/evancz/elm-svg/latest/) to make some fancier clickable shapes. The cool part of the view code is `toOffset` which calculates the rotation offset for the current `AnimationState`.
+
+`view`的代码本身是完全标准的[`elm-svg`](http://package.elm-lang.org/packages/evancz/elm-svg/latest/)做一些奇特的可点击的形状。酷的部分是view的代码是`toOffset`，他计算抵消当前`AnimationState`转动。
 
 ```elm
 -- import Easing exposing (ease, easeOutBounce, float)
@@ -825,10 +857,20 @@ toOffset animationState =
 
 We are using [@Dandandan](https://github.com/Dandandan)’s [easing package](http://package.elm-lang.org/packages/Dandandan/Easing/latest) which makes it easy to do [all sorts of cool easings](http://easings.net/) on numbers, colors, points, and any other crazy thing you want.
 
+我们使用的是“dandandan的一揽子宽松政策使得它容易做各种很酷的宽松政策对数字，颜色，点，和其他疯狂的事，你想。
+
 So the `ease` function is taking a number between 0 and `duration`. It then turns that into a number between 0 and `rotateStep` which we set to 90 degrees up at the top of our program. You also provide an easing. In our case we gave `easeOutBounce` which means as we slide from 0 to `duration`, we will get a number between 0 and 90 with that easing added. Pretty crazy! Try swapping `easeOutBounce` out for [other easings](http://package.elm-lang.org/packages/Dandandan/Easing/latest/Easing) and see how it looks!
+
+因此，缓解功能是在0和持续时间之间取一个数字。然后转到0号和rotatestep之间，我们设置为90度，在我们的节目上。您还提供了一个宽松。在我们的情况下，我们给easeoutbounce意味着我们从0滑落到时间，我们会得到一个数字0和90之间，宽松加。相当疯狂！试着换了其他easeoutbounce easings看看！
 
 From here, we wire everything together in `SpinSquarePair`, but that code is pretty much exactly the same as in example 2 and example 6.
 
+从这里，我们一起在spinsquarepair一切线，但代码是相当准确如例2、例6相同。
+
 Okay, so that is the basics of doing animation with this library! It is not clear if we nailed everything here, so let us know how things go as you get more experience. Hopefully we can make it even easier!
 
+好了，这是制作这个库的基础！如果我们把所有的东西都钉在这里，那就不清楚了，所以让我们知道，当你得到更多的经验时，事情会怎样。希望我们能使它更容易！
+
 > **Note:** I expect we can build some abstractions on top of the core ideas here. This example does some lower level stuff, but I bet we can find some nice patterns to make this easier as we work with it more. If you find it weird now, try to make something better and tell us about it!
+
+注：我希望我们可以在这里建立一些抽象的核心思想。这个例子做一些低级的东西，但我敢打赌，我们可以找到一些很好的模式，使我们更容易，因为我们与它更多。如果你觉得现在很奇怪，试着做一些更好的事情，并且告诉我们关于它的事！
