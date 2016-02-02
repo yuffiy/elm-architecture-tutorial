@@ -452,15 +452,19 @@ At every level of nesting we can derive the specific `Context` needed for each s
 [pure]: http://en.wikipedia.org/wiki/Pure_function
 
 
-## Example 5: Random GIF Viewer
+## 实例 5: 随机GIF查看器
 
-**[demo](http://evancz.github.io/elm-architecture-tutorial/examples/5.html) / [see code](examples/5/)**
+**[示例地址](http://evancz.github.io/elm-architecture-tutorial/examples/5.html) / [代码地址](examples/5/)**
 
 So we have covered how to create infinitely nestable components, but what happens when we want to do an HTTP request from somewhere in there? Or talk to a database? This example starts using [the `elm-effects` package][fx] to create a simple component that fetches random gifs from giphy.com with the topic “funny cats”. 
+
+这样我们有了包括如何创建无穷嵌套组件，但如果我们想要从其他地方做一个HTTP请求应该怎么做？或者说数据库？这个实例开始使用[`elm-effects`包][fx]去创建一个简单的用来从giphy.com随机的获取萌萌哒猫咪的GIF组件。
 
 [fx]: http://package.elm-lang.org/packages/evancz/elm-effects/latest
 
 As you look through [the implementation](examples/5/RandomGif.elm), notice that it is pretty much the same code as the counter in example 1. The `Model` is very typical:
+
+当你查看[实现](examples/5/RandomGif.elm)，注意到他与实例1的计数器很像。`Model`是非常典型的：
 
 ```elm
 type alias Model =
@@ -471,6 +475,8 @@ type alias Model =
 
 We need to know what the `topic` of the finder is and what `gifUrl` we are showing right this second. The only new thing in this example is that `init` and `update` have slightly fancier types:
 
+我们需要去知道要查找的`topic`的是什么，以及我们要显示的`gifUrl`是什么。这个实例中唯一的新东西就是`init`和`update`函数，他们拥有不一样的类型：
+
 ```elm
 init : String -> (Model, Effects Action)
 
@@ -478,6 +484,8 @@ update : Action -> Model -> (Model, Effects Action)
 ```
 
 Instead of returning just a new `Model` we also give back some effects that we would like to run. So we will be using [the `Effects` API][fx_api], which looks something like this:
+
+代替返回仅仅一个新`Model`，我们也返回我们想要运行的结果。这样我们将使用[`Effects`API][fx_api]，他看上去是这样的：
 
 [fx_api]: http://package.elm-lang.org/packages/evancz/elm-effects/latest/Effects
 
@@ -494,6 +502,9 @@ task : Task Never a -> Effects a
 ```
 
 The `Effects` type is essentially a data structure holding a bunch of independent tasks that will get run at some later point. Let’s get a better feeling of how this works by checking out how `update` works in this example:
+
+`Effects`的类型本质上是一个延迟执行的包括了一堆独立的task的数据结构。来看一下`update`，让我们更好的感受一下他是如何工作的：
+
 
 ```elm
 type Action
@@ -519,7 +530,11 @@ update msg model =
 
 So the user can trigger a `RequestMore` action by clicking the “More Please!” button, and when the server responds it will give us a `NewGif` action. We handle both these scenarios in our `update` function.
 
+所以用户可以触发一个`RequestMore`action当单击“More Please！”按钮时，当服务器响应时，他将给我们一个`NewGif`action。我们处理这两种情况在我们的`update`函数。
+
 In the case of `RequestMore` first return the existing model. The user just clicked a button, there is nothing to change right now. We also create an `Effects Action` using the `getRandomGif` function. We will get to how `getRandomGif` is defined soon. For now we just need to know that when an `Effects Action` is run, it will produce a bunch of `Action` values that will be routed throughout the application. So `getRandomGif model.topic` will eventually result in an action like this:
+
+这里的`RequestMode`首先返回了一个已存在的model。用户仅仅单击了按钮，现在还什么都没改变。我们仅仅使用`getRandomGif`函数创建了一个`Effects Action`。我们将很快得到如何`getRandomGif`是如何定义的。现在我们仅仅需要知道当`Effects Action`运行的时候，他将产生一堆`Action`值，这些值将路由到整个程序。这样`getRandomGif model.topic`将有最终结果像这样：
 
 ```elm
 NewGif (Just "http://s3.amazonaws.com/giphygifs/media/ka1aeBvFCSLD2/giphy.gif")
@@ -527,7 +542,11 @@ NewGif (Just "http://s3.amazonaws.com/giphygifs/media/ka1aeBvFCSLD2/giphy.gif")
 
 It returns a `Maybe` because the request to the server may fail. That `Action` will get fed right back into our `update` function. So when we take the `NewGif` route we just update the current `gifUrl` if possible. If the request failed, we just stick with the current `model.gifUrl`.
 
+他返回了一个`Maybe`因为这个服务器请求可能会失败。`Action`将得到的响应退回到我们的`update`函数。这样当我们那`NewGif`路由我们仅仅更新当前的`gitUrl`如果可能的话。如果请求失败了，我们仅仅使用当前的`model.gifUrl`。
+
 We see the same kind of thing happening in `init` which defines the initial model and asks for a GIF in the correct topic from giphy.com’s API.
+
+我们看到一些相同的事发生在`init`函数中，那就是定义了初始model和从giphy.com的Api寻求一个正确的GIF主题。
 
 ```elm
 init : String -> (Model, Effects Action)
@@ -541,9 +560,15 @@ init topic =
 
 Again, when the random GIF effect is complete, it will produce an `Action` that gets routed to our `update` function.
 
+再次，当随机GIF Effect完成是，他产生一个路由到`update`函数的`Action`。
+
 > **Note:** So far we have been using the `StartApp.Simple` module from [the start-app package](http://package.elm-lang.org/packages/evancz/start-app/latest), but now upgrade to the `StartApp` module. It is able to handle the complexity of more realistic web apps. It has [a slightly fancier API](http://package.elm-lang.org/packages/evancz/start-app/latest/StartApp). The crucial change is that it can handle our new `init` and `update` types.
 
+> **注意** 目前位置，我们已经从[start-app包](http://package.elm-lang.org/packages/evancz/start-app/latest)使用了`StartApp.Simple`模块，但是现在要升级到`StartApp`模块。他能够处理更多复杂的web程序。他有[一个更好的API](http://package.elm-lang.org/packages/evancz/start-app/latest/StartApp)。更重要的是，他可以处理我们新的`init`和`update`类型。
+
 One of the crucial aspects of this example is the `getRandomGif` function that actually describes how to get a random GIF. It uses [tasks][] and [the `Http` package][http], and I will try to give an overview of how these things are being used as we go. Let’s look at the definition:
+
+这一例子的关键是`getRandomGif`函数实际上描述了如何得到随机GIF。他使用[tasks][]和[`Http`包][http]，我会尽量描述这些东西是如何运作的。来看看这些定义：
 
 [tasks]: http://elm-lang.org/guide/reactivity#tasks
 [http]: http://package.elm-lang.org/packages/evancz/elm-http/latest
@@ -584,18 +609,28 @@ decodeImageUrl =
 
 Once we have written this up, we are able to reuse `getRandomGif` in our `init` and `update` functions.
 
+一旦我们写了这些，我们就可以在`init`和`update`函数中重复利用`getRandomGif`。
+
 One of the interesting things about the task returned by `getRandomGif` is that it can `Never` fail. The idea is that any potential failure *must* be handled explicitly. We do not want any tasks failing silently.
+
+一个关于`getRandomGif`返回任务有趣的是，他永远不会失败。这个想法是，任何潜在的失败应该被明确的处理。我们不希望任何任务悄悄的失败。
 
 I am going to try to explain exactly how that works, but it is not crucial to get every piece of this to use things! Okay, so every `Task` has a failure type and a success type. For example, an HTTP task may have a type like this `Task Http.Error String` such that we can fail with an `Http.Error` or succeed with a `String`. This makes it nice to chain a bunch of tasks together without worrying too much about errors. Now lets say our component requests a task, but the task fails. What happens then? Who gets notified? How do we recover? By making the failure type `Never` we force any potential errors into the success type such that they can be handled explicitly by the component. In our case, we use `Task.toMaybe : Task x a -> Task y (Maybe a)` so our `update` function must explicitly handle HTTP failures. This means tasks cannot silently fail, you always handle potential errors explicitly.
 
+我要试着解释一下这是如何工作的，但这并不是很重要，把每一件事都用上。很好，所以每个`Task`都有一个失败类型和一个成功类型。例如一个HTTP任务可能有一个这样的类型像`Task Http.Error String`，这样我们就能处理一个`Http.Error`的失败或一个`String`的成功。这使得他很好的处理任务链而无需过多的担心过多的错误。现在说让我们的组件去请求任务，但是他失败了，那会发生什么？谁将得到通知？我们如何恢复？通过`Never`类型，我们不可能强制任何潜在的错误进入成功的类型，这样，他们可以清除的处理组件。在我们的例子中，我们使用`Task.toMaybe : Task x a -> Task y (Maybe a )`，所以我们的`update`函数必须显式的处理HTTP失败的情况。这意味着任务不能悄悄的失败，你总能够明确的处理潜在的错误。
 
-## Example 6: Pair of random GIF viewers
 
-**[demo](http://evancz.github.io/elm-architecture-tutorial/examples/6.html) / [see code](examples/6/)**
+## 实例 6: 一对随机GIF查看器
+
+**[示例地址](http://evancz.github.io/elm-architecture-tutorial/examples/6.html) / [代码地址](examples/6/)**
 
 Alright, effects can be done, but what about *nested* effects? Did you think about that?! This example reuses the exact code from the GIF viewer in example 5 to create a pair of independent GIF viewers.
 
+很好，effects可以完成，但如果是*嵌套*的effects呢？你有没有想过？这个实例可以重用实例5的GIF查看器来创建一对独立的GIF查看器。
+
 As you look through [the implementation](examples/6/RandomGifPair.elm), notice that it is pretty much the same code as the pair of counters in example 2. The `Model` is defined as two `RandomGif.Model` values:
+
+当你看[实现](examples/6/RandomGifPair.elm)时，主要到，他的代码和实例2非常像。`Model`被定义为两个`RandomGif,Model`的值：
 
 ```elm
 type alias Model =
@@ -605,6 +640,8 @@ type alias Model =
 ```
 
 This lets us keep track of each independently. Our actions are just routing messages to the appropriate subcomponent.
+
+
 
 ```elm
 type Action
