@@ -630,7 +630,7 @@ Alright, effects can be done, but what about *nested* effects? Did you think abo
 
 As you look through [the implementation](examples/6/RandomGifPair.elm), notice that it is pretty much the same code as the pair of counters in example 2. The `Model` is defined as two `RandomGif.Model` values:
 
-当你看[实现](examples/6/RandomGifPair.elm)时，主要到，他的代码和实例2非常像。`Model`被定义为两个`RandomGif,Model`的值：
+当你看[实现](examples/6/RandomGifPair.elm)时，注意到，他的代码和实例2非常像。`Model`被定义为两个`RandomGif,Model`的值：
 
 ```elm
 type alias Model =
@@ -641,7 +641,7 @@ type alias Model =
 
 This lets us keep track of each independently. Our actions are just routing messages to the appropriate subcomponent.
 
-
+这让我们能够独立的跟踪每一个。我们的action将消息路由到相应的子组件。
 
 ```elm
 type Action
@@ -650,6 +650,8 @@ type Action
 ```
 
 The interesting thing is that we actually use the `Left` and `Right` tags a bit in our `update` and `init` functions.
+
+有趣的是，我们可以用`Left`、`Right`标记点在我们的`update`和`init`函数。
 
 ```elm
 -- Effects.map : (a -> b) -> Effects a -> Effects b
@@ -676,7 +678,11 @@ update action model =
 
 So in each branch we call the `RandomGif.update` function which is returning a new model and some effects we are calling `fx`. We return an updated model like normal, but we need to do some extra work on our effects. Instead of returning them directly, we use [`Effects.map`](http://package.elm-lang.org/packages/evancz/elm-effects/latest/Effects#map) function to turn them into the same kind of `Action`. This works very much like `Signal.forwardTo`, letting us tag the values to make it clear how they should be routed.
 
+在每一份我们称`RandomGif.update`函数，返回一个新的mode和一些effects我们称他们为`fx`。我们正常的返回一个更新后的model，但是我们需要做一些额外的工作对于我们的effects。而不是将他们直接返回，我们使用[`Effects.map`](http://package.elm-lang.org/packages/evancz/elm-effects/latest/Effects#map)函数使他们变为同一种`Action`。这些工作非常像`Signal.forwardTo`,让我们清楚他们应该如何路由。
+
 The same thing happens in the `init` function. We provide a topic for each random GIF viewer and get back an initial model and some effects.
+
+同样的事情发生在`init`函数。我们提供了一个topic为每个随机GIF查看器，回到初始model和一些effects。
 
 ```elm
 init : String -> String -> (Model, Effects Action)
@@ -697,21 +703,28 @@ init leftTopic rightTopic =
 
 In this case we not only use `Effects.map` to tag results appropriately, we also use the [`Effects.batch`](http://package.elm-lang.org/packages/evancz/elm-effects/latest/Effects#batch) function to lump them all together. All of the requested tasks will get spawned off and run independently, so the left and right effects will be in progress at the same time.
 
+在这种情况下，我们不仅用`Effects.map`适当的去标记结果，我们也用了[`Effects.batch`](http://package.elm-lang.org/packages/evancz/elm-effects/latest/Effects#batch)函数将他们揉成一团。所有被请求的任务将产生并独立运行，因此，在同一时间内，左和右的effects将在同一时间进行。
 
-## Example 7: List of random GIF viewers
+## 实例 7: 随机GIF查看器列表
 
-**[demo](http://evancz.github.io/elm-architecture-tutorial/examples/7.html) / [see code](examples/7/)**
+**[示例地址](http://evancz.github.io/elm-architecture-tutorial/examples/7.html) / [代码地址](examples/7/)**
 
 This example lets you have a list of random GIF viewers where you can create the topics yourself. Again, we reuse the core `RandomGif` module exactly as is.
 
+这个实例可以让你有一个随机的GIF查看器列表，你可以自己创建他。再次，我们可以重复利用核心`RandomGif`完全一样。
+
 When you look through [the implementation](examples/7/RandomGifList.elm) you will see that it exactly corresponds to example 3. We put all of our submodels in a list associated with an ID and do our operations based on those IDs. The only thing new is that we are using `Effects` in the `init` and `update` function, putting them together with `Effects.map` and `Effects.batch`.
+
+当你查看[实现](examples/7/RandomGifList.elm)，你会发现他与实例3完全对应。我们把所有的子model通过一个ID放在一起，通过这些ID操作他们。有仅仅一个是新的，我们在`init`和`update`函数使用了`Effects`，用`Effects.map`和`Effects.batch`将他们放在一起。
 
 Please open an issue if this section should go into more detail about how things work!
 
+请打开一个问题，如果这部分应深入了解事情如何工作的更多细节！
 
-## Example 8: Animation
 
-**[demo](http://evancz.github.io/elm-architecture-tutorial/examples/8.html) / [see code](examples/8/)**
+## 实例 8: 动画
+
+**[示例地址](http://evancz.github.io/elm-architecture-tutorial/examples/8.html) / [代码地址](examples/8/)**
 
 Now we have seen components with tasks that can be nested in arbitrary ways, but how does it work for animation?
 
