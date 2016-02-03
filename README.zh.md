@@ -726,21 +726,21 @@ Please open an issue if this section should go into more detail about how things
 
 **[示例地址](http://evancz.github.io/elm-architecture-tutorial/examples/8.html) / [代码地址](examples/8/)**
 
-Now we have seen components with tasks that can be nested in arbitrary ways, but how does it work for animation?
+Now we have seen components with tasks that can be nested in arbitrary ways, but how does it work for animation? 
 
-现在我们已经看到了组件的任务，可以嵌套在任意的方式，但对于动画他是如何工作的？
+现在我们已经看到了带task的组件可以随意嵌套，但处理动画又怎样的？
 
 Interestingly, it is pretty much exactly the same! (Or perhaps it is no longer surprising that the same pattern as in all the other examples works here too... Seems like a pretty good pattern!)
 
-有趣的是，他完全是相同的！（或许也不再令人惊讶的是，在所有其他的例子中，同样的模式也在这里工作……似乎是一个很好的模式！）
+有趣的是，他们完全相同！（或许你已经司空见惯了，所有其他的实例也都是同样的模式……这个模式似乎非常厉害！）
 
 This example is a pair of clickable squares. When you click a square, it rotates 90 degrees. Overall the code is an adapted form of example 2 and example 6 where we keep all the logic for animation in `SpinSquare.elm` which we then reuse multiple times in `SpinSquarePair.elm`. 
 
-这个例子是一对可点击的正方形，当你单击方块，他旋转90度。总体来说，代码是实例2和实例6的一种适配，我们将动画的所有逻辑写在`SpinSquare.elm`，然后我们可以在`SpinSquarePair.elm`中使用多次。
+这个实例是一对可点击的正方形，当你单击方块时，他会旋转90度。总体来说，代码与实例2和实例6都差不多，我们将动画的所有逻辑写在`SpinSquare.elm`中，然后就可以在`SpinSquarePair.elm`中反复使用了。
 
 So all the new and interesting stuff is happening [in `SpinSquare`](examples/8/SpinSquare.elm), so we are going to focus on that code. The first thing we need is a model:
 
-所有新的和有趣的东西发生在[`SpinSquare`中](examples/8/SpinSquare.elm)，所以我们要关注代码。首先我们需要一个model：
+[`SpinSquare`](examples/8/SpinSquare.elm)有些有趣的新东西，所以我们先来看看他。首先我们需要一个model：
 
 ```elm
 type alias Model =
@@ -759,7 +759,7 @@ duration = second
 
 So our core model is the `angle` that the square is currently at and then some `animationState` to track what is going on with any ongoing animation. If there is no animation it is `Nothing`, but if something is happening it holds:
 
-所以我们的核心model是方块当前的`angle`，然后`animationState`来监测正在进行中动画的状态。如果没有动画，他就是`Nothing`，但是如果有什么事发生了：
+model是方块当前的角度`angle`，和用来监测正在进行中动画状态的`animationState`，如果没有进行中的动画，他就是`Nothing`，否则的话有他包括两个值：
   
   * `prevClockTime` &mdash; The most recent clock time which we will use for calculating time diffs. It will help us know exactly how many milliseconds have passed since last frame.
   
