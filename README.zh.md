@@ -867,10 +867,6 @@ From here, we wire everything together in `SpinSquarePair`, but that code is pre
 
 从这里，我们在`SpinSquarePair`中将所有这些串在一起，但是代码和实例2、实例6几乎一样。
 
-Okay, so that is the basics of doing animation with this library! It is not clear if we nailed everything here, so let us know how things go as you get more experience. Hopefully we can make it even easier!
+好了，这就是用这个库处理动画的基本做法。但这还没有结束，如果你得到了更多有价值的体验，请让我们如何做的更好。希望能使他的实现变得更加简单。
 
-好了，这就是用这个库所做的基本的动画。但这并不是他的全部，如果你得到更多有价值的体验，请告知我们。希望我们能使他变得更容易。
-
-> **Note:** I expect we can build some abstractions on top of the core ideas here. This example does some lower level stuff, but I bet we can find some nice patterns to make this easier as we work with it more. If you find it weird now, try to make something better and tell us about it!
-
-> **注意：** 我希望我们可以在核心思想上建立起一些抽象。这个例子是一些低级别的东西，但我敢打赌，我们可以找到更好的模式，使得实现起来更容易。如果你发现他不可思议，试着做的更好，并且告知我们！
+> **注意：** 我希望我们可以在核心思想上建立起一些抽象。这个例子只是一些低级别的动画，但我敢打赌，我们可以找到一个更好的模式，使得他实现起来更为容易。如果你发现一些不可思议的实现能做的更好，请把他告诉我们！
