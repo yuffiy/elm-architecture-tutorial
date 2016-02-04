@@ -726,21 +726,13 @@ Please open an issue if this section should go into more detail about how things
 
 **[示例地址](http://evancz.github.io/elm-architecture-tutorial/examples/8.html) / [代码地址](examples/8/)**
 
-Now we have seen components with tasks that can be nested in arbitrary ways, but how does it work for animation? 
+现在我们已经看到了带task的组件也可以随意嵌套，那动画又怎样的实现呢？
 
-现在我们已经看到了带task的组件也可以随意的嵌套，那处理动画又怎样的？
-
-Interestingly, it is pretty much exactly the same! (Or perhaps it is no longer surprising that the same pattern as in all the other examples works here too... Seems like a pretty good pattern!)
-
-有趣的是，他们完全相同！（或许你已经司空见惯了，所有其他的实例也都是同样的模式……这个模式z真的非常厉害！）
-
-This example is a pair of clickable squares. When you click a square, it rotates 90 degrees. Overall the code is an adapted form of example 2 and example 6 where we keep all the logic for animation in `SpinSquare.elm` which we then reuse multiple times in `SpinSquarePair.elm`. 
+有趣的是，他们完全相同！（或许你已经司空见惯了，所有其他的实例也都是同样的模式……这个模式真的非常厉害！）
 
 这个实例是一对可点击的正方形，当你单击方块时，他会旋转90度。总体来说，代码与实例2和实例6都差不多，我们将动画的所有逻辑写在`SpinSquare.elm`中，然后在`SpinSquarePair.elm`中就可以反复使用了。
 
-So all the new and interesting stuff is happening [in `SpinSquare`](examples/8/SpinSquare.elm), so we are going to focus on that code. The first thing we need is a model:
-
-[`SpinSquare`](examples/8/SpinSquare.elm)中有些有趣的新东西，所以我们先来看看他。首先我们需要一个model：
+[`SpinSquare`](examples/8/SpinSquare.elm)中有些有趣的新东西，所以我们先来看看他。首先，我们需要一个model：
 
 ```elm
 type alias Model =
@@ -757,23 +749,13 @@ rotateStep = 90
 duration = second
 ```
 
-So our core model is the `angle` that the square is currently at and then some `animationState` to track what is going on with any ongoing animation. If there is no animation it is `Nothing`, but if something is happening it holds:
-
-model是方块当前的角度`angle`，和用来监测正在进行中动画状态的`animationState`，如果没有进行中的动画，他就是`Nothing`，否则的话他包含了两个值：
-  
-  * `prevClockTime` &mdash; The most recent clock time which we will use for calculating time diffs. It will help us know exactly how many milliseconds have passed since last frame.
+model是方块当前的角度`angle`，和用来监测正在进行中动画状态的`animationState`。如果没有进行中的动画，`animationState`就是`Nothing`，否则的话他包含了两个值：
   
   * `prevClockTime` &mdash; 最近的时钟，用来计算时间差。他帮助我们精确计算出离最后一帧已经过去多少毫秒。
   
-  * `elapsedTime` &mdash; A number between 0 and `duration` that tells us how far we are in the animation.
-  
-  * `elapsedTime` &mdash; 动画的持续时间，一个0与`duration`之间的数字。
-
-The `rotateStep` constant is just declaring how far it turns on each click. You can mess with that and everything should keep working.
+  * `elapsedTime` &mdash; 动画的持续时间，介于0与`duration`之间的数字。
 
 `rotateStep`定义了每次点击所转动的角度。你可以随便修改他，不会影响正常工作。
-
-Now the interesting stuff all happens in `update`:
 
 真正有趣的东西发生在`update`函数上：
 
@@ -818,11 +800,7 @@ update msg model =
           )
 ```
 
-There are two kinds of `Action` we need to handle:
-
 我们需要处理两种`Action`：
-
-  - `Spin` indicates that a user clicked the shape, requesting a spin. So in the `update` function, we request a clock tick if there is no animation going and just let things stay as is if one is already going.
   
   - `Spin` 表示用户点击了方块，请求一次旋转。所以在`update`函数中，当动画停止时，我们请求一个时钟，当动画正在进行中时，我们让他保持不动。
   
@@ -830,17 +808,11 @@ There are two kinds of `Action` we need to handle:
   
   - `Tick` 表示我们得到了一个时钟，并需要完成一个动画步数。这意味着我们需要在`update`中更新`animationState`。所以首先我们检测了动画是否正在进行中。如果是，我们仅仅找出`newElapsedTime`和`elapsedTime`，并加上一个时间差。如果现在经过的时间大于持续时间，我们就停止动画，停止请求新的时钟。其他情况我们就更新动画状态并请求其他时钟。
 
-Again, I think we can cut this code down as we write more code like this and start seeing the general pattern. Should be exciting to find!
+正如我们所写的那样，我们再一次用一开始所见到的一般模式将这段代码写了出来。多么令人兴奋的发现！
 
-再一次，正如我们所写的那样，我们用一开始所见到的一般模式将这段代码写了下来。这是多么令人兴奋的发现！
+最后我们还有`view`函数，他非常有趣！。为什么我们只是线性的递增了`elapsedTime`的值，却有一个非常漂亮的回弹效果，这是如何产生的？
 
-Finally we have a somewhat interesting `view` function! This example gets a nice bouncy animation, but we are just incrementing our `elapsedTime` in linear chunks. How is that happening?
-
-最后，还有一个有意思的`view`函数。我们只是线性的递增了`elapsedTime`的值，却出现了一个漂亮的回弹效果，他是如何产生的？
-
-The `view` code itself is totally standard [`elm-svg`](http://package.elm-lang.org/packages/evancz/elm-svg/latest/) to make some fancier clickable shapes. The cool part of the view code is `toOffset` which calculates the rotation offset for the current `AnimationState`.
-
-`view`代码本身用完全标准的[`elm-svg`](http://package.elm-lang.org/packages/evancz/elm-svg/latest/)库画出可点击的方块。view中很酷的是`toOffset`，他用来计算当前`AnimationState`转动的偏移量。
+`view`中用了elm的svg库，[`elm-svg`](http://package.elm-lang.org/packages/evancz/elm-svg/latest/)来画出可点击的方块。最酷的是`toOffset`函数，他用来计算当前`AnimationState`转动的偏移量。
 
 ```elm
 -- import Easing exposing (ease, easeOutBounce, float)
@@ -855,17 +827,13 @@ toOffset animationState =
       ease easeOutBounce float 0 rotateStep duration elapsedTime
 ```
 
-We are using [@Dandandan](https://github.com/Dandandan)’s [easing package](http://package.elm-lang.org/packages/Dandandan/Easing/latest) which makes it easy to do [all sorts of cool easings](http://easings.net/) on numbers, colors, points, and any other crazy thing you want.
-
-我们使用的是[@Dandandan](https://github.com/Dandandan)的[easing package](http://package.elm-lang.org/packages/Dandandan/Easing/latest)库，他可以在数字，颜色，坐标变换，以及你能想到任何疯狂事情上做出非常酷的[缓动效果](http://easings.net/)。
+我们使用的是[@Dandandan](https://github.com/Dandandan)的[easing package](http://package.elm-lang.org/packages/Dandandan/Easing/latest)库，他可以简单的在数字，颜色，坐标变换，以及你能想到任何疯狂事情上做出非常酷的[缓动效果](http://easings.net/)。
 
 So the `ease` function is taking a number between 0 and `duration`. It then turns that into a number between 0 and `rotateStep` which we set to 90 degrees up at the top of our program. You also provide an easing. In our case we gave `easeOutBounce` which means as we slide from 0 to `duration`, we will get a number between 0 and 90 with that easing added. Pretty crazy! Try swapping `easeOutBounce` out for [other easings](http://package.elm-lang.org/packages/Dandandan/Easing/latest/Easing) and see how it looks!
 
 因此，`ease`函数取0至持续时间`duration`数字。然后转动0至`rotateStep`之间的角度，rotateStep就是在程序开始部分，我们设置的90°角。你也可以提供一个缓动函数，这里我们使用了`easeOutBounce`，easeOutBounce意味着从0到`duration`时，我们将得到一个0到90之间与缓动值相加的数字。非常厉害，试着将`easeOutBounce`替换成别的[缓动函数](http://package.elm-lang.org/packages/Dandandan/Easing/latest/Easing)看看效果。
 
-From here, we wire everything together in `SpinSquarePair`, but that code is pretty much exactly the same as in example 2 and example 6.
-
-从这里，我们在`SpinSquarePair`中将所有这些串在一起，但是代码和实例2、实例6几乎一样。
+我们在`SpinSquarePair`中将所有这些东西串在一起，和实例2、实例6大部分代码都是一样的。
 
 好了，这就是用这个库处理动画的基本做法。但这还没有结束，如果你得到了更多有价值的体验，请让我们如何做的更好。希望能使他的实现变得更加简单。
 
