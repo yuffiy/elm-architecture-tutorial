@@ -456,7 +456,7 @@ At every level of nesting we can derive the specific `Context` needed for each s
 
 **[示例地址](http://evancz.github.io/elm-architecture-tutorial/examples/5.html) / [代码地址](examples/5/)**
 
-我们已经知道了如何创建无穷嵌套的组件，但当从某些地方或数据库发起HTTP请求，这要怎么处理？这个例子将使用[`elm-effects`][fx]库来创建一个简单的组件，用来从giphy.com获取一些随机的萌萌哒猫咪主题的照片。
+我们已经知道了如何创建无穷嵌套的组件，但当从某些地方发起HTTP请求或操作数据库，这要怎么处理？这个例子将使用[`elm-effects`][fx]库来创建一个简单的组件，用来从giphy.com获取一些随机的萌萌哒猫咪主题的照片。
 
 [fx]: http://package.elm-lang.org/packages/evancz/elm-effects/latest
 
@@ -487,10 +487,10 @@ module Effects where
 type Effects a
 
 none : Effects a
-  -- don't do anything
+  -- 什么也不做
 
 task : Task Never a -> Effects a
-  -- request a task, do HTTP and database stuff
+  -- 请求一个task，HTTP或是数据库
 ```
 
 `Effects`类型本质上是一个能够延迟执行一组独立任务的数据结构。来看一下`update`函数，让我们更好的感受一下他是如何工作的：
@@ -544,7 +544,7 @@ init topic =
 
 > **注意** 目前为止，我们已经使用了[start-app](http://package.elm-lang.org/packages/evancz/start-app/latest)库的`StartApp.Simple`模块，但是现在要升级到`StartApp`模块。他能够处理更多复杂的web程序。。更重要的是，他有一个略有区别的[API](http://package.elm-lang.org/packages/evancz/start-app/latest/StartApp)，可以处理我们新的`init`和`update`类型。
 
-这个例子一个关键的地方是`getRandomGif`函数实际上描述了如何取得随机的GIF。他使用了[tasks][]和[`Http`][http]库，我会尽量讲清除这些东西是如何运作的。来看看这些定义：
+这个例子一个关键的地方是`getRandomGif`函数实际上描述了如何取得随机的GIF。他使用了[tasks][]和[`Http`][http]库，我会尽量讲明白这些东西是如何运作的。来看看他们的定义：
 
 [tasks]: http://elm-lang.org/guide/reactivity#tasks
 [http]: http://package.elm-lang.org/packages/evancz/elm-http/latest
@@ -572,8 +572,7 @@ randomUrl topic =
     , "tag" => topic
     ]
 
--- 将giphy传回来的JSON数据转义为JSON对象，并取出`json.data.image_url`
--- 的值。
+-- 将giphy传回来的JSON数据转义为JSON对象，并取出`json.data.image_url`的值。
 decodeImageUrl : Json.Decoder String
 decodeImageUrl =
   Json.at ["data", "image_url"] Json.string
@@ -581,7 +580,7 @@ decodeImageUrl =
     
 有了这些功能，我们就可以在`init`和`update`函数中应用`getRandomGif`了。
 
-关于`getRandomGif`返回的task，一个有趣的事情是，他从不会失败。他的思路是任何潜在的错误必须被明确的处理。我们不希望任何task静默失败。
+关于`getRandomGif`返回的task，一个有趣的事情是，他永远不会失败。思路是，任何潜在的错误必须被明确的处理。我们不希望任何task静默失败。
 
 我要试着解释一些这是如何工作的，但并不是说要了解他的全部。好的，所有的Task都有一个失败类型和一个成功类型。比如，一个HTTP task可能有一个类型签名像`Task Http.Error String`，这样我们失败时他就是一个`Http.Error`，成功时就是一个`String`。这样做可以很漂亮的将一组tasks链起来而不必担心太多的错误。现在我们说一个组件请求了一个task，但是他失败了。那会发生什么？谁会得到通知？我们要怎么恢复他？通过使用失败类型，我们不能强迫任何错误强制并入成功类型，我们的组件要明确的处理他。这里因为使用了`Task.toMaybe : Task x a -> Task y (Maybe a)`的类型签名，所以我们`update`函数必须要处理HTTP失败的情况。这就是说，tasks不能静默失败，你总是要明确的处理错误。
 
