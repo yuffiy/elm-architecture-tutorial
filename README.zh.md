@@ -456,7 +456,7 @@ At every level of nesting we can derive the specific `Context` needed for each s
 
 **[示例地址](http://evancz.github.io/elm-architecture-tutorial/examples/5.html) / [代码地址](examples/5/)**
 
-我们已经知道了如何创建无穷嵌套的组件，但当从某些地方发起HTTP请求或操作数据库，这要怎么处理？这个例子将使用[`elm-effects`][fx]库来创建一个简单的组件，用来从giphy.com获取一些随机的萌萌哒猫咪主题的照片。
+我们已经知道了如何创建无穷嵌套的组件，但当从某些地方发起HTTP请求或操作数据库，这该如何处理？这个例子将使用[`elm-effects`][fx]库来创建一个简单的组件，用来从giphy.com获取一些随机的萌萌哒猫咪主题的照片。
 
 [fx]: http://package.elm-lang.org/packages/evancz/elm-effects/latest
 
@@ -588,13 +588,9 @@ decodeImageUrl =
 
 **[示例地址](http://evancz.github.io/elm-architecture-tutorial/examples/6.html) / [代码地址](examples/6/)**
 
-Alright, effects can be done, but what about *nested* effects? Did you think about that?! This example reuses the exact code from the GIF viewer in example 5 to create a pair of independent GIF viewers.
+好的，effects完成的很好，但换成是*嵌套*的effects呢？不知道你有没有想过？我们可以继续用实例5的GIF查看器来创建一对独立的GIF查看器。
 
-很好，effects可以完成，但如果是*嵌套*的effects呢？你有没有想过？这个实例可以重用实例5的GIF查看器来创建一对独立的GIF查看器。
-
-As you look through [the implementation](examples/6/RandomGifPair.elm), notice that it is pretty much the same code as the pair of counters in example 2. The `Model` is defined as two `RandomGif.Model` values:
-
-当你看[实现](examples/6/RandomGifPair.elm)时，注意到，他的代码和实例2非常像。`Model`被定义为两个`RandomGif,Model`的值：
+当你查看具体的[实现](examples/6/RandomGifPair.elm)代码时，会注意到他与实例2的代码很像。`Model`被定义为两个`RandomGif,Model`的值：
 
 ```elm
 type alias Model =
@@ -603,9 +599,7 @@ type alias Model =
     }
 ```
 
-This lets us keep track of each independently. Our actions are just routing messages to the appropriate subcomponent.
-
-这让我们能够独立的跟踪每一个。我们的action将消息路由到相应的子组件。
+这让我们能够对他们分别独立控制。我们的actions负责将消息路由到相应的子组件。
 
 ```elm
 type Action
@@ -615,7 +609,7 @@ type Action
 
 The interesting thing is that we actually use the `Left` and `Right` tags a bit in our `update` and `init` functions.
 
-有趣的是，我们可以用`Left`、`Right`标记点在我们的`update`和`init`函数。
+有趣的是，我们实际上在`update`和`init`函数中用`Left`、`Right`来标记。
 
 ```elm
 -- Effects.map : (a -> b) -> Effects a -> Effects b
