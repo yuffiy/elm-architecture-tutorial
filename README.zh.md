@@ -599,7 +599,7 @@ type alias Model =
     }
 ```
 
-这让我们能够对他们分别独立控制。我们的actions负责将消息路由到相应的子组件。
+这让我们能够对他们分别控制。我们的actions负责将消息路由到相应的子组件。
 
 ```elm
 type Action
@@ -609,7 +609,7 @@ type Action
 
 The interesting thing is that we actually use the `Left` and `Right` tags a bit in our `update` and `init` functions.
 
-有趣的是，我们实际上在`update`和`init`函数中用`Left`、`Right`来标记。
+有趣的是，实际上我们在`update`和`init`函数中用`Left`、`Right`来标记。
 
 ```elm
 -- Effects.map : (a -> b) -> Effects a -> Effects b
